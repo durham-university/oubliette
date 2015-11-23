@@ -47,8 +47,11 @@ table.item-list {
 }
 
 dd .file_well {
-  margin-bottom: 0;
+  margin-bottom: 10px;
+  margin-top: 10px;
   width: 80%;
+  left: 10%;
+  position: relative;
 
   h3 {
     margin-top: 0;

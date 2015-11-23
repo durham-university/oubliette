@@ -11,6 +11,7 @@ FactoryGirl.define do
 
     trait :with_file do
       after(:build) { |file,evaluator|
+        file.ingestion_checksum = 'md5:15eb7a5c063f0c4cdda6a7310b536ba4'
         file.content = ActiveFedora::File.new
         file.content.content = fixture('test1.jpg')
         file.content.original_name = 'test1.jpg'

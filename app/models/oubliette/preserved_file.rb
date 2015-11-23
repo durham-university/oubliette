@@ -26,6 +26,9 @@ module Oubliette
     property :title, multiple: false, predicate: ::RDF::Vocab::DC.title
     property :note, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#admin_note')
 
+    property :ingestion_checksum, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#ingestion_checksum')
+    validate :validate_ingestion_checksum
+
     def update(params)
       [:ingestion_log, :preservation_log].each do |key|
         if params.key?(key) && params[key].is_a?(String)
@@ -36,5 +39,54 @@ module Oubliette
       end
       super(params)
     end
+
+    def content_checksum(algorithm='md5')
+      digest = nil
+      case algorithm.downcase
+      when 'md5'
+        digest = Digest::MD5.new
+      when 'sha256', 'sha-256', 'sha'
+        digest = Digest::SHA256.new
+      when 'sha384', 'sha-384'
+        digest = Digest::SHA384.new
+      when 'sha512', 'sha-512'
+        digest = Digest::SHA512.new
+      else
+        return nil
+      end
+
+      readable = content.content || ''
+      readable = StringIO.new(readable) if readable.is_a? String
+      readable.rewind
+
+      buf = ""
+      while readable.read(16384, buf)
+        digest.update(buf)
+      end
+      readable.rewind
+
+      digest.hexdigest
+    end
+
+    def validate_ingestion_checksum
+      if ingestion_checksum.present?
+        split = ingestion_checksum.split(':',2)
+        split.unshift('md5') if split.length==1
+        algorithm = split[0]
+        received_checksum = split[1].strip
+        checksum = content_checksum(algorithm)
+        if checksum == nil
+          errors[:checksum] ||= []
+          errors[:checksum] << "Unsupported checksum algorithm #{split[0]}"
+          return false
+        elsif checksum != received_checksum
+          errors[:content] ||= []
+          errors[:content] << 'File contents don\'t match the checksum'
+          return false
+        end
+      end
+      true
+    end
+
   end
 end

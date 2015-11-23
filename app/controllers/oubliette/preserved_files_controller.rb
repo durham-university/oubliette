@@ -3,7 +3,7 @@ module Oubliette
     include Oubliette::ModelControllerBase
 
     def self.presenter_terms
-      [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :content]
+      [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :ingestion_checksum, :content]
     end
 
     def self.form_terms
@@ -18,6 +18,9 @@ module Oubliette
 
     def resource_params
       content_file = params.try(:[],'preserved_file').try(:delete,'content')
+
+      raise 'Cannot update file contents' if @resource && !@resource.new_record? && content_file
+
       super.tap do |params|
         if params.try(:[],'ingestion_log').try(:is_a?,String)
           content = params['ingestion_log']

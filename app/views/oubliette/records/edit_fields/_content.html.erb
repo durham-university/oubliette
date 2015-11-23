@@ -1,1 +1,3 @@
-<%= f.input key, as: :file, required: f.object.required?(key) %>
+<% if f.object.to_model.new_record? %>
+  <%= f.input key, as: :file, required: f.object.required?(key) %>
+<% end %>
