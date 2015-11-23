@@ -1,0 +1,6 @@
+<% content_for :sidebar do %>
+  <%= render 'oubliette/sidebar/edit_link_control', resource: @resource %>
+  <%= render 'oubliette/sidebar/destroy_control', resource: @resource %>
+<% end %>
+
+<%= render 'oubliette/shared/show_item', presenter: @presenter %>

@@ -1,0 +1,12 @@
+<% unless defined?(no_title) && no_title %>
+  <div class="page-header"><h1><%= model_name.pluralize.humanize %></h1></div>
+<% end %>
+
+<% items = model_class.all %>
+<%= render 'oubliette/shared/item_list', items: items %>
+
+<% unless defined?(no_add) && no_add %>
+  <% if can?(:create, model_class) %>
+    <p><%= link_to("Add a new #{model_name.singularize.downcase}", oubliette.polymorphic_path([:new,model_name.singularize.to_sym]), { class: 'btn btn-default' } ) %></p>
+  <% end %>
+<% end %>

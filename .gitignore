@@ -10,6 +10,7 @@ test_app/db/*.sqlite3-journal
 # Ignore all logfiles and tempfiles.
 test_app/log/*.log
 test_app/tmp/
+test_app/.byebug_history
 /log/*.log
 /tmp/
 !/log/.keep

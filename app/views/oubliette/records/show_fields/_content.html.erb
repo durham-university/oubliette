@@ -1,0 +1,18 @@
+<% file = record[key] %>
+<% unless file.new_record? %>
+  <div class="well file_well">
+    <% if can?(:download, file) %>
+      <h3><%= link_to 'Download', oubliette.download_path(@resource.id) %></h3>
+    <% end %>
+    <dl class="dl-horizontal">
+      <dt>Original file name</dt>
+      <dd><%= file.original_name %></dd>
+      <dt>Content type</dt>
+      <dd><%= file.mime_type %></dd>
+      <dt>File size</dt>
+      <dd><%= file.size %></dd>
+    </dl>
+  </div>
+<% else %>
+  Empty
+<% end %>

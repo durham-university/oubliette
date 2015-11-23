@@ -1,0 +1,7 @@
+<% content_for :sidebar do %>
+  <%= render 'oubliette/sidebar/destroy_control', resource: @resource %>
+<% end %>
+
+<div class="page-header"><h1>Editing <%= model_name.humanize %></h1></div>
+
+<%= render 'oubliette/shared/edit_form', item: @resource %>

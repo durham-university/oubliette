@@ -31,10 +31,13 @@ Gem::Specification.new do |s|
   s.add_dependency 'rubyzip'
   s.add_dependency 'simple_form', '~> 3.1.0'
 
+  s.add_dependency 'devise'
+  s.add_dependency 'devise_ldap_authenticatable'
+  s.add_dependency 'cancancan', '~> 1.10'
+
   s.add_dependency 'rsolr', '~> 1.0.6'
   s.add_dependency 'active-fedora'
-  s.add_dependency 'hydra-pcdm', '0.3.1'
-  s.add_dependency 'hydra-works', '0.4.0'
+  s.add_dependency 'hydra-editor', '~> 1.1.0'
 
   s.add_dependency 'resque'
   s.add_dependency 'resque-pool'

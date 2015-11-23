@@ -1,0 +1,3 @@
+<% if resource.is_a?(Oubliette::ModelBase) && can?(:edit, resource)%>
+  <li><%= link_to("Edit #{resource.model_name.human}", polymorphic_path([:edit,resource])) %></li>
+<% end %>

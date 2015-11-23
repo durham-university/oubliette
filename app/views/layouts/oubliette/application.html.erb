@@ -38,7 +38,7 @@
   </head>
   <body>
 
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -58,6 +58,10 @@
             <li><%= link_to "Link2", '#' %></li>
             <li><%= link_to "Link3", '#' %></li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <%= render 'oubliette/navbar_login' %>
+            <li><img class="logo" src="<%= asset_path 'oubliette/logo.png' %>" /></li>
+          </ul>
         </div><!-- /.navbar-collapse -->
       </div>
     </nav>
@@ -69,20 +73,17 @@
           <%= yield %>
         </div>
         <div class="col-md-3">
-          <div class="well sidebar-nav">
-            <h3>Sidebar</h3>
-            <ul class="nav nav-list">
-              <li class="nav-header">Sidebar</li>
-              <li><%= link_to "Link1", "#"  %></li>
-              <li><%= link_to "Link2", "#"  %></li>
-              <li><%= link_to "Link3", "#"  %></li>
-            </ul>
-          </div><!--/.well -->
+          <% if content_for(:sidebar).present? %>
+            <div class="well sidebar-nav">
+              <ul class="nav nav-list">
+                <%= content_for :sidebar %>
+              </ul>
+            </div><!--/.well -->
+          <% end %>
         </div><!--/span-->
       </div><!--/row-->
 
       <footer>
-        <p>&copy; Company 2015</p>
       </footer>
 
     </div> <!-- /container -->

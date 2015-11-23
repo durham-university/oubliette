@@ -1,0 +1,12 @@
+<div class="page-header">
+  <h1>Oubliette</h1>
+</div>
+
+<p>Digital preservation module</p>
+
+<% if can?(:create, Oubliette::PreservedFile) %>
+  <p><%= link_to("Add a new file", oubliette.polymorphic_path([:new,:preserved_file]), { class: 'btn btn-default' } ) %></p>
+<% end %>
+
+<h2>Recent files</h2>
+<%= render 'oubliette/shared/index', model_name: 'preserved_file', model_class: Oubliette::PreservedFile, no_title: true, no_add: true %>
