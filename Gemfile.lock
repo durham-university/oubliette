@@ -407,8 +407,11 @@ DEPENDENCIES
   bootstrap-sass (~> 3.3.5)
   bootstrap-sass-extras
   byebug
+  cancancan (~> 1.10)
   capybara
   database_cleaner
+  devise
+  devise_ldap_authenticatable
   factory_girl_rails
   jettywrapper
   jquery-ui-rails

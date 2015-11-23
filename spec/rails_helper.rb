@@ -14,7 +14,7 @@ require 'rspec/rails'
 require 'capybara/rails'
 require 'active_fedora/cleaner'
 require 'database_cleaner'
-require 'support/features_helpers'
+#require 'support/features_helpers'
 
 if ENV['COVERAGE']
   require 'simplecov'
@@ -72,15 +72,15 @@ RSpec.configure do |config|
   # https://relishapp.com/rspec/rspec-rails/docs
   config.infer_spec_type_from_file_location!
 
-#  config.include Devise::TestHelpers, type: :controller
-#  config.include Devise::TestHelpers, type: :view
+  config.include Devise::TestHelpers, type: :controller
+  config.include Devise::TestHelpers, type: :view
 
   config.include Warden::Test::Helpers, type: :feature
   config.after(:each, type: :feature) { Warden.test_reset! }
 
   config.include Capybara::RSpecMatchers, type: :input
 
-  config.include FeaturesHelpers, type: :feature
+#  config.include FeaturesHelpers, type: :feature
 
   config.include FactoryGirl::Syntax::Methods
 
