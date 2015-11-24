@@ -5,7 +5,7 @@ RSpec.describe "oubliette/preserved_files/edit", type: :view do
   before do
     assign(:resource, preserved_file)
     assign(:form, Oubliette::PreservedFilesController.edit_form_class.new(preserved_file))
-    controller.request.path_parameters[:id] = resource.id
+    controller.request.path_parameters[:id] = preserved_file.id
   end
 
   helper( Oubliette::ApplicationHelper )
@@ -17,6 +17,7 @@ RSpec.describe "oubliette/preserved_files/edit", type: :view do
 
   it "renders attributes in" do
     render
-    assert_select "form[action=?][method=?]", oubliette.preserved_files_path, "post" do
+    assert_select "form[action=?][method=?]", oubliette.preserved_file_path(preserved_file), "post" do
+    end
   end
 end

@@ -1,5 +1,5 @@
 module Oubliette
-  class DownloadsController < ApplicationController
+  class DownloadsController < Oubliette::ApplicationController
     # This class is largely based on Hydra::Conroller::DownloadBehaviour.
     # It's replicated here so we don't need to depend on hydra-head and all it's
     # dependencies just for the download behaviour.

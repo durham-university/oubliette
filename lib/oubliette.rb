@@ -16,7 +16,7 @@ module Oubliette
 
   def self.config
     @config ||= begin
-      config_file = Rails.root.join('config','hilda.yml')
+      config_file = Rails.root.join('config','oubliette.yml')
       File.exists?(config_file) ? YAML.load_file(config_file)[Rails.env] : {}
     end
   end

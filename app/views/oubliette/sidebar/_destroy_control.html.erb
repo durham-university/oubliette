@@ -10,7 +10,7 @@
             <h1 class="modal-title">Destroy <%= resource.model_name.human %></h1>
           </div>
           <div class="popup-tool-form">
-          <%= form_for resource, url: polymorphic_path(resource), html: {
+          <%= form_for resource, url: oubliette.polymorphic_path(resource), html: {
               method: 'delete',
               onsubmit: "return ($(this).find('#confirm_deletion').prop('checked') === true)"
             } do |f| %>

@@ -38,7 +38,7 @@ module Oubliette
 
     def model_class
       if controller.is_a? ActionView::TestCase::TestController
-        "Schmit::#{self.instance_variable_get(:@request).instance_variable_get(:@env)["action_dispatch.request.path_parameters"][:controller].split('/').last.singularize.capitalize}".constantize
+        "Oubliette::#{self.instance_variable_get(:@request).instance_variable_get(:@env)["action_dispatch.request.path_parameters"][:controller].split('/').last.singularize.camelize}".constantize
       else
         controller.class.model_class
       end
@@ -47,6 +47,6 @@ module Oubliette
     def format_time(time)
       time = DateTime.parse(time) if time.is_a? String
       time.strftime('%F %R')
-    end    
+    end
   end
 end

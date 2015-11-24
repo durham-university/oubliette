@@ -3,10 +3,27 @@ module Oubliette
     extend ActiveSupport::Concern
 
     included do
-      before_action :authenticate_user!, only: [:edit, :update, :destroy, :new, :create]
+      before_action :authenticate_user!, only: [:edit, :update, :destroy, :new, :create, :index]
       before_action :set_resource, only: [:show, :edit, :update, :destroy]
       before_action :authorize_resource!
       before_action :check_allow_destroy, only: [:destroy]
+    end
+
+    def authenticate_user!(opts={})
+      authenticate_api_user
+      super(opts) unless warden.user
+    end
+
+    def authenticate_api_user
+      if Oubliette.config['api_debug'] && params['api_debug']
+        # This is for debugging and development only. Allows full access simply
+        # by setting the api_debug parameter in the request.
+        warden.request.env['devise.skip_trackable'] = true
+        warden.set_user(User.new(roles: ['api']))
+        true
+      else
+        false
+      end
     end
 
     def index
@@ -47,7 +64,7 @@ module Oubliette
       respond_to do |format|
         if @resource.valid? && @resource.save
           format.html { redirect_to @resource, notice: "#{self.class.model_name.capitalize} was successfully created." }
-          format.json { render :show, status: :created, location: @resource }
+          format.json { render json: {status: :created, resource: @resource.as_json } }
         else
           format.html { render :new }
           format.json { render json: @resource.errors, status: :unprocessable_entity }

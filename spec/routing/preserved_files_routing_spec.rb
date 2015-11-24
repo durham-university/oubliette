@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Oubliette::RepositoriesController, type: :routing do
+RSpec.describe Oubliette::PreservedFilesController, type: :routing do
   describe "routing" do
     routes { Oubliette::Engine.routes }
 

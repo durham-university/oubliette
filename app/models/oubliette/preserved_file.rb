@@ -29,15 +29,18 @@ module Oubliette
     property :ingestion_checksum, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#ingestion_checksum')
     validate :validate_ingestion_checksum
 
-    def update(params)
-      [:ingestion_log, :preservation_log].each do |key|
-        if params.key?(key) && params[key].is_a?(String)
-          contents = params[key]
-          self.send(key).content = contents
-          params = params.except(key)
+    # Override log setters to accept strings in addition to files
+    [:ingestion_log, :preservation_log].each do |key|
+      self.class_eval <<-CODE, __FILE__, __LINE__ + 1
+        def #{key}=(*args)
+          value = args.first
+          if value.is_a? String
+            self.send(:#{key}).content = value
+          else
+            super
+          end
         end
-      end
-      super(params)
+      CODE
     end
 
     def content_checksum(algorithm='md5')
@@ -88,5 +91,10 @@ module Oubliette
       true
     end
 
+    def self.ingest_file(file,params={})
+      f = PreservedFile.new(params.merge({status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now}))
+      f.content.content = file
+      f
+    end
   end
 end

@@ -10,7 +10,8 @@ module Oubliette
 
     def set_oubliette_abilities(user)
       user ||= User.new
-      if user.is_admin?
+
+      if user.is_admin? || user.is_api_user?
         can :manage, :all
       elsif user.is_registered?
         can [:read,:new,:create], [Oubliette::PreservedFile]

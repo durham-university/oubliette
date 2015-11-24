@@ -1,5 +1,5 @@
 module Oubliette
-  class StaticPagesController < ApplicationController
+  class StaticPagesController < Oubliette::ApplicationController
     def home
     end
   end

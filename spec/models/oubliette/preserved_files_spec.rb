@@ -29,6 +29,26 @@ RSpec.describe Oubliette::PreservedFile do
     end
   end
 
+  describe "log setters" do
+    it "can set ingestion log with a string" do
+      preserved_file.ingestion_log = 'new log contents'
+      preserved_file.save
+      preserved_file.reload
+      expect(preserved_file.ingestion_log.content).to eql 'new log contents'
+    end
+    it "can set preservation log with a string" do
+      preserved_file.preservation_log = 'new log contents'
+      preserved_file.save
+      preserved_file.reload
+      expect(preserved_file.preservation_log.content).to eql 'new log contents'
+    end
+    it "can set logs from constructor" do
+      f = Oubliette::PreservedFile.create(title: 'test title', ingestion_log: 'ingestion log contents', preservation_log: 'preservation log contents')
+      expect(f.ingestion_log.content).to eql 'ingestion log contents'
+      expect(f.preservation_log.content).to eql 'preservation log contents'
+    end
+  end
+
   describe "validation" do
     it "validates status" do
       preserved_file.status = Oubliette::PreservedFile::STATUS_NOT_CHECKED
@@ -55,6 +75,23 @@ RSpec.describe Oubliette::PreservedFile do
       expect(preserved_file).to be_valid
       preserved_file.content.content = ''
       expect(preserved_file).not_to be_valid
+    end
+  end
+
+  describe "::ingest_file" do
+    let( :preserved_file ) { Oubliette::PreservedFile.ingest_file('ingested contents', title: 'file title', ingestion_log: 'ingestion log contents') }
+    it "sets file contents" do
+      expect(preserved_file.content.content).to eql 'ingested contents'
+    end
+    it "sets ingestion date" do
+      expect(preserved_file.ingestion_date.to_i).to be_within(60).of(DateTime.now.to_i)
+    end
+    it "sets other attributes" do
+      expect(preserved_file.title).to eql 'file title'
+      expect(preserved_file.ingestion_log.content).to eql 'ingestion log contents'
+    end
+    it "is valid" do
+      expect(preserved_file).to be_valid
     end
   end
 end

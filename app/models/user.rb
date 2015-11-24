@@ -9,6 +9,10 @@ class User < ActiveRecord::Base
     roles.include? 'admin'
   end
 
+  def is_api_user?
+    roles.include? 'api'
+  end
+
   def is_registered?
     !new_record?
   end
