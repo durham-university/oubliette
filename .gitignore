@@ -11,6 +11,7 @@ test_app/db/*.sqlite3-journal
 test_app/log/*.log
 test_app/tmp/
 test_app/.byebug_history
+oubliette_api/spec/examples.txt
 .byebug_history
 /log/*.log
 /tmp/
