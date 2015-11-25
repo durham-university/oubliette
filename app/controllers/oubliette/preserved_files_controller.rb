@@ -18,6 +18,7 @@ module Oubliette
 
     def resource_params
       content_file = params.try(:[],'preserved_file').try(:delete,'content')
+      content_type = params.try(:[],'preserved_file').try(:delete,'content_type')
 
       raise 'Cannot update file contents' if @resource && !@resource.new_record? && content_file
 
@@ -30,8 +31,8 @@ module Oubliette
         if content_file
           params['content'] = ActiveFedora::File.new
           params['content'].content = content_file
-          params['content'].original_name = content_file.original_filename
-          params['content'].mime_type = content_file.content_type
+          params['content'].mime_type = content_type || content_file.content_type || 'application/octet-stream'
+          params['content'].original_name = content_file.original_filename || 'unnamed_file'
         end
       end
     end

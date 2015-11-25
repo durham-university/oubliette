@@ -74,15 +74,15 @@ module Oubliette
 
         if local_mode
           begin
-            f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note))
+            f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type))
             f.save!
           rescue StandardError => e
-            raise Oubliette::API::IngestError, "Unable to local ingest file: #{e.to_s}"
+            raise Oubliette::API::IngestError, "Unable to local ingest file: #{e.message}", e.backtrace
           end
           return from_json(f.as_json)
         end
 
-        query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note).each_with_object({}) do |(k,v),o|
+        query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type).each_with_object({}) do |(k,v),o|
           o[:"preserved_file[#{k}]"] = v
         end
 
@@ -93,7 +93,7 @@ module Oubliette
         begin
           json = JSON.parse(resp.body)
         rescue StandardError => e
-          raise Oubliette::API::IngestError, "Unable to ingest file. #{e.to_s}"
+          raise Oubliette::API::IngestError, "Unable to ingest file: #{e.message}", e.backtrace
         end
         raise Oubliette::API::IngestError, "Unable to ingest file. #{json['status']}" unless json['status']=='created'
 

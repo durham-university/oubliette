@@ -92,8 +92,9 @@ module Oubliette
     end
 
     def self.ingest_file(file,params={})
-      f = PreservedFile.new(params.merge({status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now}))
+      f = PreservedFile.new(params.except(:content_type).merge({status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now}))
       f.content.content = file
+      f.content.mime_type = params[:content_type] || file.try(:content_type) || 'application/octet-stream'
       f
     end
   end

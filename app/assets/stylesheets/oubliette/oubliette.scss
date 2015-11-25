@@ -62,3 +62,9 @@ dd .file_well {
     margin-bottom: 0;
   }
 }
+
+
+.file_contents_dialog.modal-dialog {
+  width: 80%;
+  min-width: 600px;
+}
