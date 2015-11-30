@@ -9,4 +9,7 @@
 <% end %>
 
 <h2>Recent files</h2>
-<%= render 'oubliette/shared/index', model_name: 'preserved_file', model_class: Oubliette::PreservedFile, no_title: true, no_add: true %>
+<%
+  @resources = Oubliette::PreservedFilesController.resources_for_page(1)
+%>
+<%= render 'oubliette/shared/index', model_name: 'preserved_file', model_class: Oubliette::PreservedFile, no_title: true, no_add: true, no_paging: true %>

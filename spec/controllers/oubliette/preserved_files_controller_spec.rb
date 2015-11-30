@@ -33,10 +33,34 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
     let(:user) { FactoryGirl.create(:user, :admin) }
     before { sign_in user }
     describe "GET #index" do
-      it "assigns all preserved files as @repositories" do
+      it "assigns all preserved files as @resources" do
         preserved_file # create by refencing
         get :index
-        expect(assigns(:preserved_files)).to eq([preserved_file])
+        expect(assigns(:resources).to_a).to eq [preserved_file]
+      end
+
+      describe "pagination" do
+        let!( :many_files ) {
+          (1..25).map do |i|
+            FactoryGirl.create(:preserved_file, title: "Test file #{i}", ingestion_date: DateTime.new(2015,1,1) + i.day)
+          end
+        }
+        it "assigns a paging context" do
+          get :index
+          expect(assigns(:resources).current_page).to eql 1
+          expect(assigns(:resources).total_pages).to eql 2
+          expect(assigns(:resources).to_a.size).to eql 20
+          expect(assigns(:resources).first.title).to eql "Test file 25"
+          expect(assigns(:resources).last.title).to eql "Test file 6"
+        end
+        it "reads pagination parameters" do
+          get :index, { page: 2, per_page: 10 }
+          expect(assigns(:resources).current_page).to eql 2
+          expect(assigns(:resources).total_pages).to eql 3
+          expect(assigns(:resources).to_a.size).to eql 10
+          expect(assigns(:resources).first.title).to eql "Test file 15"
+          expect(assigns(:resources).last.title).to eql "Test file 6"
+        end
       end
     end
 

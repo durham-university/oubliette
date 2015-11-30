@@ -27,15 +27,34 @@ module Oubliette
     end
 
     def index
-      resources = @parent.try(:"#{self.controller_name}")
-      resources = self.class.model_class.all if !resources
+      if use_paging?
+        per_page = [[params.fetch('per_page', 20).to_i, 100].min, 5].max
+        page = [params.fetch('page', 1).to_i, 1].max
+        resources = @parent.try(:"#{self.controller_name}")
+        if resources
+          resources = self.class.resources_for_page(page: page, per_page: per_page, from: resources)
+        else
+          resources = self.class.resources_for_page(page: page, per_page: per_page)
+        end
+      else
+        resources = @parent.try(:"#{self.controller_name}")
+        resources = self.class.model_class.all if !resources
+      end
 
       respond_to do |format|
         format.html {
+          @resources = resources
           instance_variable_set(:"@#{self.controller_name}",resources)
           render
         }
-        format.json { render json: resources.map(&:as_json) }
+        format.json {
+          response = { resources: resources.map(&:as_json) }
+          if resources.is_a? PagingScope
+            response[:page] = resources.current_page
+            response[:total_pages] = resources.total_pages
+          end
+          render json: response
+        }
       end
     end
 
@@ -97,6 +116,10 @@ module Oubliette
 
     protected
 
+    def use_paging?
+      true
+    end
+
     def new_resource(params={})
       self.class.model_class.new(params)
     end
@@ -132,6 +155,20 @@ module Oubliette
     end
 
     module ClassMethods
+      def resources_for_page(*args)
+        page = 1
+        page = args.shift.to_i if args.first.is_a?(Integer) || args.first.is_a?(String)
+        options = args.last || {}
+        page = options.fetch(:page, page)
+        per_page = options.fetch(:per_page, 20)
+        from = options.fetch(:from, model_class)
+        total_pages = (from.count.to_f / per_page).ceil
+        PagingScope.new(
+          from.order('ingestion_date_dtsi desc').limit(per_page).offset((page-1)*per_page),
+          total_pages,
+          page )
+      end
+
       def model_class
         @model_class ||= "Oubliette::#{self.controller_name.classify}".constantize
       end
@@ -154,6 +191,19 @@ module Oubliette
 
       def edit_form_class
         GenericForm.form_class_for(model_class, form_terms)
+      end
+    end
+
+    class PagingScope
+      attr_accessor :relation, :total_pages, :current_page
+      def initialize(relation, total_pages, current_page)
+        @relation = relation
+        @total_pages = total_pages
+        @current_page = current_page
+      end
+
+      def method_missing(name, *args, &block)
+        @relation.send(name, *args, &block)
       end
     end
   end

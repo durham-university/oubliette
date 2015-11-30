@@ -2,8 +2,9 @@
   <div class="page-header"><h1><%= model_name.pluralize.humanize %></h1></div>
 <% end %>
 
-<% items = model_class.all %>
-<%= render 'oubliette/shared/item_list', items: items %>
+<%= render 'oubliette/shared/item_list', items: @resources %>
+
+<%= paginate @resources unless defined?(no_paging) && no_paging %>
 
 <% unless defined?(no_add) && no_add %>
   <% if can?(:create, model_class) %>
