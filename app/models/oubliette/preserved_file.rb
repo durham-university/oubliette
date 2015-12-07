@@ -6,6 +6,9 @@ module Oubliette
     contains :ingestion_log, class_name: 'ActiveFedora::File'
     contains :preservation_log, class_name: 'ActiveFedora::File'
 
+    # ActiveFedora::File also has original_name and mime_type.
+    # These are really only relevant to the main content.
+
     property :ingestion_date, multiple: false, predicate: ::RDF::Vocab::DC.dateSubmitted, class_name: 'DateTime' do |index|
       index.type :date
       index.as :stored_sortable
@@ -92,9 +95,11 @@ module Oubliette
     end
 
     def self.ingest_file(file,params={})
-      f = PreservedFile.new(params.except(:content_type).merge({status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now}))
+      f = PreservedFile.new(params.except(:content_type, :original_filename).merge({status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now}))
       f.content.content = file
       f.content.mime_type = params[:content_type] || file.try(:content_type) || 'application/octet-stream'
+      f.content.original_name = params[:original_filename] || file.try(:original_filename) ||
+          (file.try(:path) ? File.basename(file.path) : nil) || 'unnamed_file'
       f
     end
   end

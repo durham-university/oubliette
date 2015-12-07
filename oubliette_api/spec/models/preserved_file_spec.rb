@@ -42,15 +42,19 @@ RSpec.describe Oubliette::API::PreservedFile do
     let( :response ) { { status: :created, resource: json }.to_json }
     let( :response_code ) { 200 }
     let( :original_filename ) { nil }
+    let( :content_type ) { nil }
     before {
       expect(Oubliette::API::PreservedFile).to receive(:post) { |url,params|
         query = params[:query]
         expect(query[:'preserved_file[content]']).to respond_to :read
-        expect(query[:'preserved_file[content]'].original_filename).to eql(original_filename) if original_filename
+        expect(query[:'preserved_file[content]'].original_filename).not_to be_nil
+        expect(query[:'preserved_file[content]'].content_type).not_to be_nil
         expect(query[:'preserved_file[title]']).to eql 'ingest title'
         expect(query[:'preserved_file[note]']).to eql 'ingest note'
         expect(query[:'preserved_file[ingestion_log]']).to eql 'ingestion log'
         expect(query[:'preserved_file[ingestion_checksum]']).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
+        expect(query[:'preserved_file[original_filename]']).to eql(original_filename) if original_filename
+        expect(query[:'preserved_file[content_type]']).to eql(content_type) if content_type
         OpenStruct.new(body: response, code: response_code)
       }
     }
@@ -64,6 +68,13 @@ RSpec.describe Oubliette::API::PreservedFile do
       let( :original_filename ) { 'test1.jpg' }
       it "sets original file name" do
         params[:original_filename] = original_filename
+        Oubliette::API::PreservedFile.ingest(file_fixture, params)
+      end
+    end
+    context "with content type" do
+      let( :content_type ) { 'image/jpeg' }
+      it "sets content_type" do
+        params[:content_type] = content_type
         Oubliette::API::PreservedFile.ingest(file_fixture, params)
       end
     end

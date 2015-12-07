@@ -61,20 +61,9 @@ module Oubliette
           file=StringIO.new(file.to_s)
         end
 
-        options[:original_filename] ||= 'unnamed_file' unless file.respond_to?(:original_filename)
-
-        if options[:original_filename]
-          file.instance_variable_set(:@original_filename, options[:original_filename])
-          class << file
-            def original_filename
-              @original_filename
-            end
-          end
-        end
-
         if local_mode
           begin
-            f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type))
+            f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename))
             f.save!
           rescue StandardError => e
             raise Oubliette::API::IngestError, "Unable to local ingest file: #{e.message}", e.backtrace
@@ -82,7 +71,25 @@ module Oubliette
           return from_json(f.as_json)
         end
 
-        query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type).each_with_object({}) do |(k,v),o|
+        # HTTParty requires the file to respond to these methods
+        unless file.respond_to?(:original_filename)
+          file.instance_variable_set(:@original_filename, (options[:original_filename] || 'unnamed_file') )
+          class << file
+            def original_filename
+              @original_filename
+            end
+          end
+        end
+        unless file.respond_to?(:content_type)
+          file.instance_variable_set(:@content_type, (options[:content_type] || 'application/octet-stream') )
+          class << file
+            def content_type
+              @content_type
+            end
+          end
+        end
+
+        query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename).each_with_object({}) do |(k,v),o|
           o[:"preserved_file[#{k}]"] = v
         end
 
@@ -95,7 +102,7 @@ module Oubliette
         rescue StandardError => e
           raise Oubliette::API::IngestError, "Unable to ingest file: #{e.message}", e.backtrace
         end
-        raise Oubliette::API::IngestError, "Unable to ingest file. #{json['status']}" unless json['status']=='created'
+        raise Oubliette::API::IngestError, "Unable to ingest file. #{json['error']}" unless json['status']=='created'
 
         from_json(json['resource'])
       end
