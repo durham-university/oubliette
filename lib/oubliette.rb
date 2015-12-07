@@ -7,6 +7,7 @@ require 'jquery-ui-rails'
 require 'simple_form'
 require 'active-fedora'
 require 'hydra-editor'
+require 'durham_rails'
 require "oubliette/engine"
 
 module Oubliette

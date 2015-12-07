@@ -32,6 +32,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'simple_form', '~> 3.1.0'
   s.add_dependency 'kaminari'
 
+  s.add_dependency 'durham_rails'
+
   s.add_dependency 'devise'
   s.add_dependency 'devise_ldap_authenticatable'
   s.add_dependency 'cancancan', '~> 1.10'

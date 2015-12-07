@@ -14,15 +14,16 @@ module Oubliette
       raise 'Override this'
     end
 
-    def user_key_attribute
-      raise 'Override this'
-    end
 
     def user_key
-      send(user_key_attribute)
+      send(self.class.user_key_attribute)
     end
 
     module ClassMethods
+      def user_key_attribute
+        raise 'Override this'
+      end
+
       def find_by_user_key(key)
         find_by(user_key_attribute => key)
       end

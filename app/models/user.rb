@@ -21,7 +21,7 @@ class User < ActiveRecord::Base
     display_name || username
   end
 
-  def user_key_attribute
+  def self.user_key_attribute
     :username
   end
 

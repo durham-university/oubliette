@@ -186,11 +186,11 @@ module Oubliette
       end
 
       def presenter_class
-        GenericPresenter.presenter_class_for(model_class, presenter_terms)
+        DurhamRails::GenericPresenter.presenter_class_for(model_class, presenter_terms)
       end
 
       def edit_form_class
-        GenericForm.form_class_for(model_class, form_terms)
+        DurhamRails::GenericForm.form_class_for(model_class, form_terms)
       end
     end
 
