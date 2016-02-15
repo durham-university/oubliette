@@ -15,9 +15,9 @@ module Oubliette
 
       def from_json(json)
         super(json)
-        @ingestion_date = DateTime.parse(json['ingestion_date'].to_s) if json['ingestion_date']
+        @ingestion_date = DateTime.parse(json['ingestion_date'].to_s) if json['ingestion_date'].present?
         @status = json['status']
-        @check_date = DateTime.parse(json['check_date'].to_s) if json['check_date']
+        @check_date = DateTime.parse(json['check_date'].to_s) if json['check_date'].present?
         @note = json['note']
         @ingestion_checksum = json['ingestion_checksum']
       end
@@ -33,7 +33,7 @@ module Oubliette
       end
 
       def download_url
-        "#{self.class.base_uri}/#{self.model_name}/#{CGI.escape id}/download"
+        "#{self.class.base_uri}/#{self.model_name}/#{CGI.escape id}/download#{"?api_debug=true" if Oubliette::API.config['api_debug']}"
       end
 
       def self.all

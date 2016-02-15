@@ -5,7 +5,7 @@ module Oubliette
 
       included do
         include ::HTTMultiParty
-        base_uri Oubliette::API.config.fetch('base_url','http://localhost:3002/oubliette')
+        base_uri Oubliette::API.config.fetch('base_url','http://localhost:3000/oubliette')
 
         class << self
           def local_mode
