@@ -12,7 +12,7 @@
 //
 //= require jquery
 //= require jquery_ujs
-//= require jquery-ui
+//# require jquery-ui
 //= require bootstrap-sprockets
 //= require oubliette/blacklight_mock
 //= require hydra-editor/hydra-editor
