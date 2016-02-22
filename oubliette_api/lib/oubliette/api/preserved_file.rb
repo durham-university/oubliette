@@ -14,21 +14,21 @@ module Oubliette
       end
 
       def from_json(json)
-        super(json)
-        @ingestion_date = DateTime.parse(json['ingestion_date'].to_s) if json['ingestion_date'].present?
+        super(json)        
+        @ingestion_date = DateTime.parse(json['ingestion_date'].to_s) if date_time_present?(json['ingestion_date'])
         @status = json['status']
-        @check_date = DateTime.parse(json['check_date'].to_s) if json['check_date'].present?
+        @check_date = DateTime.parse(json['check_date'].to_s) if date_time_present?(json['check_date'])
         @note = json['note']
         @ingestion_checksum = json['ingestion_checksum']
       end
 
       def as_json(*args)
         json = super(*args)
-        json[:ingestion_date] = @ingestion_date.to_s
-        json[:status] = @status
-        json[:check_date] = @check_date.to_s
-        json[:note] = @note
-        json[:ingestion_checksum] = @ingestion_checksum
+        json['ingestion_date'] = @ingestion_date.to_s
+        json['status'] = @status
+        json['check_date'] = @check_date.to_s
+        json['note'] = @note
+        json['ingestion_checksum'] = @ingestion_checksum
         json
       end
 
@@ -106,6 +106,13 @@ module Oubliette
 
         from_json(json['resource'])
       end
+      
+      private
+      
+        def date_time_present?(dt)
+          # .present? doesn't work in vanilla Ruby
+          dt.is_a?(DateTime) ? true : ( (dt.nil? || dt=='') ? false : true )
+        end
 
     end
   end

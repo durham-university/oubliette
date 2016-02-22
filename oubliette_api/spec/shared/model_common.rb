@@ -21,8 +21,8 @@ RSpec.shared_examples "model_common" do
   describe "#as_json" do
     it "adds attributes to json" do
       json = obj.as_json
-      expect(json[:id]).to eql '5b/53/d8/08/5b53d808-2ab0-4966-85d2-7892fc033252'
-      expect(json[:title]).to eql 'Test title'
+      expect(json['id']).to eql '5b/53/d8/08/5b53d808-2ab0-4966-85d2-7892fc033252'
+      expect(json['title']).to eql 'Test title'
     end
   end
 

@@ -23,8 +23,8 @@ RSpec.describe Oubliette::API::PreservedFile do
   describe "#as_json" do
     it "adds attributes to json" do
       json = file.as_json
-      expect(json[:status]).to eql 'not checked'
-      expect(json[:ingestion_checksum]).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
+      expect(json['status']).to eql 'not checked'
+      expect(json['ingestion_checksum']).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
     end
   end
 
