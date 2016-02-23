@@ -32,6 +32,13 @@ RSpec.shared_examples "model_common" do
       expect(obj.to_json.length).to be > 0
     end
   end
+  
+  describe "::destroy" do
+    it "sends delete request" do
+      expect(obj_class).to receive(:delete).and_return(OpenStruct.new(body: '', code: 200))
+      expect(obj.destroy).to eql(true)
+    end
+  end
 
   describe "::find" do
     it "fetches and returns a new object" do
