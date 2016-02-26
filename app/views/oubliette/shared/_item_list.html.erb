@@ -1,7 +1,0 @@
-<table class="table">
-  <tbody>
-    <% items.each_with_index do |item,counter| %>
-      <%= render_one self, ["#{item.class.to_s.pluralize.underscore}/item_list_row",'oubliette/shared/item_list_row'], item: item, counter: counter %>
-    <% end %>
-  </tbody>
-</table>

@@ -6,6 +6,7 @@ require 'jquery-rails'
 #require 'dropzonejs-rails'
 require 'simple_form'
 require 'active-fedora'
+require 'active_fedora/noid'
 require 'hydra-editor'
 require 'durham_rails'
 require "oubliette/engine"

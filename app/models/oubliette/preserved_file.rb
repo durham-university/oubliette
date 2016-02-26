@@ -1,6 +1,7 @@
 module Oubliette
   class PreservedFile < ActiveFedora::Base
     include ModelBase
+    include DurhamRails::NoidBehaviour
 
     contains :content, class_name: 'ActiveFedora::File'
     contains :ingestion_log, class_name: 'ActiveFedora::File'

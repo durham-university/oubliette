@@ -1,6 +1,6 @@
 module Oubliette
   class PreservedFilesController < Oubliette::ApplicationController
-    include Oubliette::ModelControllerBase
+    include DurhamRails::ModelControllerBase
 
     def self.presenter_terms
       [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :ingestion_checksum, :content]
@@ -11,6 +11,9 @@ module Oubliette
     end
 
     protected
+    
+    def set_parent
+    end
 
     def new_resource(params={})
       PreservedFile.new( { status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now }.merge(params) )
