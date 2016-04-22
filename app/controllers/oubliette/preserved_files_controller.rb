@@ -10,6 +10,10 @@ module Oubliette
       [:title, :note, :content, :ingestion_log]
     end
 
+    def self.resources_paging_sort
+      'ingestion_date_dtsi desc'
+    end
+
     protected
     
     def set_parent
@@ -39,6 +43,6 @@ module Oubliette
         end
       end
     end
-
+    
   end
 end
