@@ -18,8 +18,12 @@ module Oubliette
 
   def self.config
     @config ||= begin
-      config_file = Rails.root.join('config','oubliette.yml')
-      File.exists?(config_file) ? YAML.load_file(config_file)[Rails.env] : {}
+      path = Rails.root.join('config','oubliette.yml')
+      if File.exists?(path)
+        YAML.load(ERB.new(File.read(path)).tap do |erb| erb.filename = path.to_s end .result)[Rails.env]
+      else
+        {}
+      end
     end
   end
 end

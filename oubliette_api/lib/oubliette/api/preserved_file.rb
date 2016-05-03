@@ -33,14 +33,26 @@ module Oubliette
       end
 
       def download_url
-        "#{self.class.base_uri}/#{self.model_name}/#{CGI.escape id}/download#{"?api_debug=true" if Oubliette::API.config['api_debug']}"
+        "#{self.class.base_uri}/#{self.model_name}/#{CGI.escape id}/download"
+      end
+      
+      # yields a Net::HTTPResponse
+      def download(&block)
+        (username,password) = [self.class.authentication_config.try(:[],'username'), self.class.authentication_config.try(:[],'password')]
+        uri = URI(download_url)
+        Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme=='https') ) do |http|
+          req = Net::HTTP::Get.new(uri)
+          req.basic_auth(username, password) if username.present?
+          http.request(req, &block)
+        end
       end
 
       def self.all
         return all_local if local_mode
         response = self.get('/preserved_files.json')
         raise FetchError, "Error fetching preserved_files: #{response.code} - #{response.message}" unless response.code == 200
-        json = JSON.parse(response.body)
+        # TODO: Handle paging properly
+        json = JSON.parse(response.body)["resources"]
         json.map do |file_json|
           self.from_json(file_json)
         end

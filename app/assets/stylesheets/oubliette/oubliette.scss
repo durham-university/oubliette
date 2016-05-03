@@ -1,6 +1,3 @@
-@import "oubliette/oubliette_bootstrap.scss";
-@import "bootstrap-sprockets";
-@import "bootstrap";
 @import "durham_rails/durham_rails.scss";
 //@import "jquery-ui";
 
@@ -45,6 +42,25 @@ table.item-list {
 
 .show-tools .nav hr {
   margin: 10px 0 0 0;
+}
+
+.form-group.multi_value>ul {
+  padding-left: 0;
+}
+
+form.new_user {
+  .form-control {
+    width: auto;
+    height: auto;
+    display: inline-block;
+  }
+
+  div.user_remember_me>div {
+    display: inline;
+    input[type='checkbox'] {
+      margin-left: 10px;
+    }
+  }
 }
 
 dd .file_well {

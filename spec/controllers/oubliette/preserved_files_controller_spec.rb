@@ -8,27 +8,6 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
 
   routes { Oubliette::Engine.routes }
 
-  describe "api debug" do
-    context "api_debug not set in config" do
-      it "fails authentication" do
-        expect {
-          post :create, {preserved_file: preserved_file_attributes, api_debug: 'true'}
-        }.not_to change(Oubliette::PreservedFile, :count)
-        expect(response).to redirect_to('/users/sign_in')
-      end
-    end
-
-    context "api_debug is set in config" do
-      before { Oubliette.config['api_debug'] = true }
-      after { Oubliette.config.delete('api_debug') }
-      it "lets in" do
-        expect {
-          post :create, {preserved_file: preserved_file_attributes, api_debug: 'true'}
-        }.to change(Oubliette::PreservedFile, :count).by(1)
-      end
-    end
-  end
-
   context "with an admin user" do
     let(:user) { FactoryGirl.create(:user, :admin) }
     before { sign_in user }

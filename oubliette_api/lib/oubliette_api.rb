@@ -1,5 +1,6 @@
 require 'active_support'
 require 'httmultiparty'
+require 'durham_rails'
 
 module Oubliette
   module API
@@ -16,7 +17,7 @@ module Oubliette
     def self.config
       @config ||= begin
         config = {}
-        if defined?(Rails)
+        if defined?(Rails) && Rails.root
           path = Rails.root.join('config',"oubliette_api.yml")
           if File.exists? path
             config = YAML.load_file(path)[Rails.env] || {}

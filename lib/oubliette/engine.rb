@@ -8,6 +8,10 @@ module Oubliette
       DurhamRails::Noid.set_active_fedora_translators
     end
 
+    initializer "oubliette.assets.precompile" do |app|
+      app.config.assets.precompile += %w( oubliette/logo.png )
+    end
+
     config.generators do |g|
       g.test_framework      :rspec,        :fixture => false
       g.fixture_replacement :factory_girl, :dir => 'spec/factories'

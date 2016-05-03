@@ -5,28 +5,12 @@ module Oubliette
 
       included do
         include ::HTTMultiParty
+        include DurhamRails::API::Authentication
         base_uri Oubliette::API.config.fetch('base_url','http://localhost:3000/oubliette')
 
         class << self
           def local_mode
             @local_mode ||= Oubliette::API.config.fetch('local_mode', false)
-          end
-
-          def authenticate_query(url,options)
-            if Oubliette::API.config['api_debug']
-              options[:query] ||= {}
-              options[:query].merge!(api_debug: 'true')
-            end
-          end
-
-          def get(url,options={})
-            authenticate_query(url,options)
-            super
-          end
-
-          def post(url,options={})
-            authenticate_query(url,options)
-            super
           end
         end
 

@@ -12,7 +12,8 @@ module Oubliette
 
     # Prevent CSRF attacks by raising an exception.
     # For APIs, you may want to use :null_session instead.
-    protect_from_forgery with: :exception unless Oubliette.config['disable_csrf']
+#    protect_from_forgery with: :exception unless Oubliette.config['disable_csrf']
+    protect_from_forgery with: :null_session
 
     # Add username - from https://github.com/plataformatec/devise/wiki/How-To%3a-Allow-users-to-sign-in-using-their-username-or-email-address
     before_action :configure_permitted_parameters, if: :devise_controller?

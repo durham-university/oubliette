@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "httmultiparty"
   s.add_dependency "rails"
+  s.add_dependency "durham_rails"
 
   s.add_development_dependency 'rspec'
 end
