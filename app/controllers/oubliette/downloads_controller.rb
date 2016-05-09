@@ -7,23 +7,6 @@ module Oubliette
     before_action :authenticate_user!
     before_filter :authorize_download!
 
-    def authenticate_user!(opts={})
-      authenticate_api_user
-      super(opts) unless warden.user
-    end
-
-    def authenticate_api_user
-      if Oubliette.config['api_debug'] && params['api_debug']
-        # This is for debugging and development only. Allows full access simply
-        # by setting the api_debug parameter in the request.
-        warden.request.env['devise.skip_trackable'] = true
-        warden.set_user(User.new(roles: ['api']))
-        true
-      else
-        false
-      end
-    end
-
     def show
       if file.new_record?
         render_404

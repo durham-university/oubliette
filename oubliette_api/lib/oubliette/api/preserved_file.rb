@@ -38,6 +38,7 @@ module Oubliette
       
       # yields a Net::HTTPResponse
       def download(&block)
+        return download_local(&block) if local_mode
         (username,password) = [self.class.authentication_config.try(:[],'username'), self.class.authentication_config.try(:[],'password')]
         uri = URI(download_url)
         Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme=='https') ) do |http|
@@ -121,9 +122,25 @@ module Oubliette
       
       private
       
+        def download_local
+          yield LocalDownload.new(local_class.find(id))
+        end
+      
         def date_time_present?(dt)
           # .present? doesn't work in vanilla Ruby
           dt.is_a?(DateTime) ? true : ( (dt.nil? || dt=='') ? false : true )
+        end
+        
+        class LocalDownload
+          def initialize(obj)
+            @obj = obj
+          end
+          def read_body(&block)
+            @obj.content.stream.each(&block)
+          end
+          def content_type
+            @obj.content.mime_type
+          end
         end
 
     end
