@@ -1,3 +1,5 @@
 if(typeof(Blacklight)=="undefined") {
-  Blacklight = { onLoad: function(){} }
+  Blacklight = { onLoad: function(callback){
+    $(callback);
+  } }
 }

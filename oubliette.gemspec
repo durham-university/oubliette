@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'simple_form', '~> 3.1.0'
   s.add_dependency 'kaminari'
 
-  s.add_dependency 'durham_rails', '~> 0.0.7'
+  s.add_dependency 'durham_rails', '~> 0.0.12'
 
   s.add_dependency 'devise'
   s.add_dependency 'devise_ldap_authenticatable'
@@ -41,7 +41,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'rsolr', '~> 1.0'
   s.add_dependency 'active-fedora'
   s.add_dependency 'active_fedora-noid'
-  s.add_dependency 'hydra-editor', '~> 1.1.0'
 
   s.add_dependency 'resque'
   s.add_dependency 'resque-pool'

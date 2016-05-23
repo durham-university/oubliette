@@ -15,5 +15,5 @@
 //# require jquery-ui
 //= require bootstrap-sprockets
 //= require oubliette/blacklight_mock
-//= require hydra-editor/hydra-editor
+//= require durham_rails/durham_rails
 //= require_tree .
