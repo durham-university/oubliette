@@ -19,6 +19,26 @@ RSpec.describe Oubliette::API::PreservedFile do
       end
     end
   end
+  
+  describe "#record_url" do
+    let(:base_url) {'http://www.example.com/oubliette'}
+    before{
+      allow(Oubliette::API::PreservedFile).to receive(:base_uri).and_return(base_url)
+    }
+    it "returns the url" do
+      expect(file.record_url).to eql('http://www.example.com/oubliette/preserved_files/b6%2F77%2Fb0%2F50%2Fb677b050-4128-4d77-ac42-8fdf55f52a69')
+    end
+  end
+  
+  describe ":record_url" do
+    let(:base_url) {'http://www.example.com/oubliette'}
+    before{
+      allow(Oubliette::API::PreservedFile).to receive(:base_uri).and_return(base_url)
+    }
+    it "returns the url" do
+      expect(Oubliette::API::PreservedFile.record_url('testid')).to eql('http://www.example.com/oubliette/preserved_files/testid')
+    end    
+  end
 
   describe "#as_json" do
     it "adds attributes to json" do

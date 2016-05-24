@@ -36,6 +36,14 @@ module Oubliette
         "#{self.class.base_uri}/#{self.model_name}/#{CGI.escape id}/download"
       end
       
+      def record_url
+        self.class.record_url(id)
+      end
+      
+      def self.record_url(id)
+        "#{self.base_uri}/#{self.model_name}/#{CGI.escape id}"
+      end
+      
       # yields a Net::HTTPResponse
       def download(&block)
         return download_local(&block) if local_mode
