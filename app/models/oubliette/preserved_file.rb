@@ -3,9 +3,9 @@ module Oubliette
     include ModelBase
     include DurhamRails::NoidBehaviour
 
-    contains :content, class_name: 'ActiveFedora::File'
-    contains :ingestion_log, class_name: 'ActiveFedora::File'
-    contains :preservation_log, class_name: 'ActiveFedora::File'
+    has_subresource :content, class_name: 'ActiveFedora::File'
+    has_subresource :ingestion_log, class_name: 'ActiveFedora::File'
+    has_subresource :preservation_log, class_name: 'ActiveFedora::File'
 
     # ActiveFedora::File also has original_name and mime_type.
     # These are really only relevant to the main content.
