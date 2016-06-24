@@ -1,0 +1,5 @@
+<h1>Fixity check of <%= @actor.model_object.title %> (<%= @actor.model_object.id %>) <span style='color: red; font-weight: bold;'>FAILED</span></h1>
+
+<h2>Actor log </h2>
+<pre><% @actor.log.each do |message| %><%= message.to_full_s %>
+<% end %></pre>

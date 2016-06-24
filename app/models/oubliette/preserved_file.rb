@@ -31,7 +31,6 @@ module Oubliette
     property :note, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#admin_note')
 
     property :ingestion_checksum, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#ingestion_checksum')
-    validate :validate_ingestion_checksum
 
     # Override log setters to accept strings in addition to files
     [:ingestion_log, :preservation_log].each do |key|
@@ -75,22 +74,14 @@ module Oubliette
       digest.hexdigest
     end
 
-    def validate_ingestion_checksum
+    def check_ingestion_fixity
       if ingestion_checksum.present?
         split = ingestion_checksum.split(':',2)
         split.unshift('md5') if split.length==1
         algorithm = split[0]
         received_checksum = split[1].strip
         checksum = content_checksum(algorithm)
-        if checksum == nil
-          errors[:checksum] ||= []
-          errors[:checksum] << "Unsupported checksum algorithm #{split[0]}"
-          return false
-        elsif checksum != received_checksum
-          errors[:content] ||= []
-          errors[:content] << 'File contents don\'t match the checksum'
-          return false
-        end
+        return false if checksum == nil || checksum != received_checksum
       end
       true
     end

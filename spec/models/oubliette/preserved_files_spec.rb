@@ -62,19 +62,21 @@ RSpec.describe Oubliette::PreservedFile do
       preserved_file.status = nil
       expect(preserved_file).not_to be_valid
     end
-
+  end
+  
+  describe "#check_ingestion_fixity" do
     it "validates checksum" do
-      expect(preserved_file).to be_valid
+      expect(preserved_file.check_ingestion_fixity).to eql(true)
       preserved_file.ingestion_checksum='md5:15eb7a5c063f0c4cdda6a7310b536ba3'
-      expect(preserved_file).not_to be_valid
+      expect(preserved_file.check_ingestion_fixity).not_to eql(true)
       preserved_file.ingestion_checksum=nil
-      expect(preserved_file).to be_valid
+      expect(preserved_file.check_ingestion_fixity).to eql(true)
       preserved_file.ingestion_checksum='dummy:15eb7a5c063f0c4cdda6a7310b536ba4'
-      expect(preserved_file).not_to be_valid
+      expect(preserved_file.check_ingestion_fixity).not_to eql(true)
       preserved_file.ingestion_checksum='sha256:cbf3aedbc2ba1de4842bc9565c8e180cd8e5e2c38cc1c2b93ae21b6d121c50a9'
-      expect(preserved_file).to be_valid
+      expect(preserved_file.check_ingestion_fixity).to eql(true)
       preserved_file.content.content = ''
-      expect(preserved_file).not_to be_valid
+      expect(preserved_file.check_ingestion_fixity).not_to eql(true)
     end
   end
 

@@ -16,7 +16,7 @@ module Oubliette
     end
 
     def model_name
-      return 'preserved_files' if controller.is_a?(Oubliette::StaticPagesController)
+      return Oubliette::PreservedFile.model_name if controller.is_a?(Oubliette::StaticPagesController)
       return super
     end
 

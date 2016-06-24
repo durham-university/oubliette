@@ -1,0 +1,6 @@
+Fixity check of <%= @actor.model_object.title %> (<%= @actor.model_object.id %>) FAILED
+
+Actor log
+
+<% @actor.log.each do |message| %><%= message.to_full_s %>
+<% end %>

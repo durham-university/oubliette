@@ -16,6 +16,8 @@ Rails.application.configure do
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
 
+  config.action_mailer.preview_path = File.expand_path('../../../../spec/mailers/previews', __FILE__)
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
