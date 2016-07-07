@@ -13,7 +13,7 @@ module Oubliette
     end
     
     def notification_recipients(actor)
-      (Oubliette.config['notification_email_to'] || []) + ([actor.user.try(:email)].compact)
+      ((Oubliette.config['notification_email_to'] || []) + [actor.user.try(:email)]).compact.uniq
     end
   end
 end
