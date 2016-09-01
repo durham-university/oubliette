@@ -20,7 +20,7 @@ module Oubliette
         if defined?(Rails) && Rails.root
           path = Rails.root.join('config',"oubliette_api.yml")
           if File.exists? path
-            config = YAML.load_file(path)[Rails.env] || {}
+            config = YAML.load(ERB.new(File.read(path)).result)[Rails.env] || {}
           end
         end
         config
