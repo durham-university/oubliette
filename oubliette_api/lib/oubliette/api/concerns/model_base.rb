@@ -7,6 +7,7 @@ module Oubliette
         include ::HTTMultiParty
         include DurhamRails::API::Authentication
         base_uri Oubliette::API.config.fetch('base_url','http://localhost:3000/oubliette')
+        read_timeout 300 # seconds
 
         class << self
           def local_mode
