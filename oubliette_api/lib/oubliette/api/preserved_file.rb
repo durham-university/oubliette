@@ -49,7 +49,9 @@ module Oubliette
         return download_local(&block) if local_mode
         (username,password) = [self.class.authentication_config.try(:[],'username'), self.class.authentication_config.try(:[],'password')]
         uri = URI(download_url)
-        Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme=='https') ) do |http|
+        req_options = { use_ssl: (uri.scheme=='https') }
+        req_options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE if [false,'false'].include?(Oubliette::API::config['verify_certificate'])
+        Net::HTTP.start(uri.hostname, uri.port, req_options ) do |http|
           req = Net::HTTP::Get.new(uri)
           req.basic_auth(username, password) if username.present?
           http.request(req, &block)
