@@ -5,6 +5,7 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
   let(:preserved_file) { FactoryGirl.create(:preserved_file) }
   let(:preserved_file_attributes) { FactoryGirl.attributes_for(:preserved_file) }
   let(:invalid_attributes) { skip("Add tests for invalid attributes") }
+  let(:uploaded_file) { fixture_file_upload('test1.jpg','image/jpeg') }
 
   routes { Oubliette::Engine.routes }
 
@@ -66,16 +67,32 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
 
     describe "POST #create" do
       context "with valid params" do
+        let(:preserved_file_attributes) { 
+          FactoryGirl.attributes_for(:preserved_file, 
+            ingestion_checksum: 'md5:15eb7a5c063f0c4cdda6a7310b536ba4',
+            content: uploaded_file,
+            content_type: 'image/jpeg' ) 
+        }
+        
         it "creates a new PreservedFile" do
           expect {
             post :create, {preserved_file: preserved_file_attributes}
           }.to change(Oubliette::PreservedFile, :count).by(1)
         end
 
-        it "assigns a newly created repository as @repository" do
+        it "assigns a newly created repository as @resource" do
           post :create, {preserved_file: preserved_file_attributes}
           expect(assigns(:resource)).to be_a(Oubliette::PreservedFile)
           expect(assigns(:resource)).to be_persisted
+        end
+        
+        it "saves all attributes" do
+          post :create, {preserved_file: preserved_file_attributes}
+          expect(assigns(:resource)).to be_a(Oubliette::PreservedFile)
+          expect(assigns(:resource).title).to eql(preserved_file_attributes[:title])
+          expect(assigns(:resource).ingestion_checksum).to eql(preserved_file_attributes[:ingestion_checksum])
+          expect(assigns(:resource).content.original_name).to eql('test1.jpg')
+          expect(assigns(:resource).content.mime_type).to eql('image/jpeg')
         end
 
         it "redirects to the created preserved file" do

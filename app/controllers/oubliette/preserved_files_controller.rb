@@ -26,6 +26,7 @@ module Oubliette
     def resource_params
       content_file = params.try(:[],'preserved_file').try(:delete,'content')
       content_type = params.try(:[],'preserved_file').try(:delete,'content_type')
+      ingestion_checksum = params.try(:[],'preserved_file').try(:delete,'ingestion_checksum')
 
       raise 'Cannot update file contents' if @resource && !@resource.new_record? && content_file
 
@@ -41,6 +42,7 @@ module Oubliette
           params['content'].mime_type = content_type || content_file.content_type || 'application/octet-stream'
           params['content'].original_name = content_file.original_filename || 'unnamed_file'
         end
+        params['ingestion_checksum'] = ingestion_checksum.to_s if ingestion_checksum
       end
     end
     
