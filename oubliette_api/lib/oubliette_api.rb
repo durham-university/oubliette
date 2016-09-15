@@ -7,6 +7,7 @@ module Oubliette
     extend ActiveSupport::Autoload
 
     autoload :PreservedFile
+    autoload :FileBatch
     autoload :FetchError
     autoload :IngestError
 

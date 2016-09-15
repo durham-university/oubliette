@@ -11,5 +11,10 @@ module Oubliette
       #       doesn't get create date for objects loaded from Solr
       return true
     end
+    
+    def as_json(*args)
+      super(*args).except('head','tail')
+    end
+    
   end
 end

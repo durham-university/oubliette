@@ -10,7 +10,7 @@ module Oubliette
         read_timeout 300 # seconds
 
         class << self
-          def local_mode
+          def local_mode?
             @local_mode ||= Oubliette::API.config.fetch('local_mode', false)
           end
         end
@@ -22,8 +22,8 @@ module Oubliette
       def initialize
       end
 
-      def local_mode
-        self.class.local_mode
+      def local_mode?
+        self.class.local_mode?
       end
 
       def as_json(*args)
@@ -45,7 +45,7 @@ module Oubliette
       end
 
       def fetch
-        return local_fetch if local_mode
+        return local_fetch if local_mode?
         response = self.class.get(fetch_url)
         raise Oubliette::API::FetchError, "Error fetching object \"#{fetch_url}\": #{response.code} - #{response.message}" unless response.code == 200
         parse_json( response.body )
@@ -53,7 +53,7 @@ module Oubliette
       end
       
       def destroy
-        return local_destroy if local_mode
+        return local_destroy if local_mode?
         response = self.class.delete(fetch_url)
         raise Oubliette::API::FetchError, "Error destroying object \"#{fetch_url}\": #{response.code} - #{response.message}" unless response.code == 200
         return true

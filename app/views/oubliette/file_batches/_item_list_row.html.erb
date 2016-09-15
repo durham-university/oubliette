@@ -1,0 +1,9 @@
+<tr class="<%= if counter
+  counter.even? ? 'even' : 'odd'
+end %>">
+  <td class="item-label"><%= link_to item.to_s, oubliette.polymorphic_path(item) %></td>
+  <td class="item-date"><%= item.ingestion_date.to_s %></td>
+  <td class="item-action">
+    <%= link_to 'Edit', oubliette.polymorphic_path([:edit,item]) if can? :edit, item %>
+  </td>
+</tr>

@@ -11,6 +11,10 @@ RSpec.describe Oubliette::PreservedFilesController, type: :routing do
     it "routes to #new" do
       expect(get: "/preserved_files/new").to route_to("oubliette/preserved_files#new")
     end
+    
+    it "routes to #new with batch" do
+      expect(get: "/file_batches/1/preserved_files/new").to route_to("oubliette/preserved_files#new", file_batch_id: '1')
+    end
 
     it "routes to #show" do
       expect(get: "/preserved_files/1").to route_to("oubliette/preserved_files#show", id: "1")
@@ -22,6 +26,10 @@ RSpec.describe Oubliette::PreservedFilesController, type: :routing do
 
     it "routes to #create" do
       expect(post: "/preserved_files").to route_to("oubliette/preserved_files#create")
+    end
+    
+    it "routes to #create with batch" do
+      expect(post: "/file_batches/1/preserved_files").to route_to("oubliette/preserved_files#create", file_batch_id: '1')
     end
 
     it "routes to #update via PUT" do

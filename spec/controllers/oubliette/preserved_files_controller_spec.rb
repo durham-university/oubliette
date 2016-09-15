@@ -73,14 +73,23 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
             content: uploaded_file,
             content_type: 'image/jpeg' ) 
         }
+        let(:file_batch) { FactoryGirl.create(:file_batch) }
         
         it "creates a new PreservedFile" do
           expect {
             post :create, {preserved_file: preserved_file_attributes}
           }.to change(Oubliette::PreservedFile, :count).by(1)
         end
+        
+        it "creates a new PreservedFile inside a batch" do
+          expect(file_batch.files.count).to eql(0)
+          post :create, {preserved_file: preserved_file_attributes, file_batch_id: file_batch.id}
+          file_batch.reload
+          expect(file_batch.files.count).to eql(1)
+          expect(file_batch.files.first.title).to eql(preserved_file_attributes[:title])
+        end
 
-        it "assigns a newly created repository as @resource" do
+        it "assigns a newly created preserved file as @resource" do
           post :create, {preserved_file: preserved_file_attributes}
           expect(assigns(:resource)).to be_a(Oubliette::PreservedFile)
           expect(assigns(:resource)).to be_persisted
@@ -105,11 +114,11 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
       context "with invalid params" do
         it "assigns a newly created but unsaved preserved file as @resource" do
           post :create, {preserved_file: invalid_attributes}
-          expect(assigns(:resource)).to be_a_new(Schmit::Repository)
+          expect(assigns(:resource)).to be_a_new(Oubliette::PreservedFile)
         end
 
         it "re-renders the 'new' template" do
-          post :create, {repository: invalid_attributes}
+          post :create, {preserved_file: invalid_attributes}
           expect(response).to render_template("new")
         end
       end

@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-RSpec.describe "oubliette/preserved_files/index", type: :view do
+RSpec.describe "oubliette/file_batches/index", type: :view do
+  let!( :file_batch ) { FactoryGirl.create(:file_batch, :with_files) }
   let!( :preserved_file ) { FactoryGirl.create(:preserved_file, :with_file) }
-  let!( :preserved_file2 ) { FactoryGirl.create(:preserved_file, :with_file) }
   before do
-    assign(:resources,Oubliette::PreservedFilesController.resources_for_page(1))
+    assign(:resources,Oubliette::FileBatchesController.index_resources)
   end
 
   helper( Oubliette::ApplicationHelper )
@@ -16,7 +16,7 @@ RSpec.describe "oubliette/preserved_files/index", type: :view do
 
   it "renders a list of resources" do
     render
+    expect(page).to have_selector("a[href='#{oubliette.file_batch_path(file_batch)}']")
     expect(page).to have_selector("a[href='#{oubliette.preserved_file_path(preserved_file)}']")
-    expect(page).to have_selector("a[href='#{oubliette.preserved_file_path(preserved_file2)}']")
   end
 end

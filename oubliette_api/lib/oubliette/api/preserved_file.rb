@@ -46,7 +46,7 @@ module Oubliette
       
       # yields a Net::HTTPResponse
       def download(&block)
-        return download_local(&block) if local_mode
+        return download_local(&block) if local_mode?
         (username,password) = [self.class.authentication_config.try(:[],'username'), self.class.authentication_config.try(:[],'password')]
         uri = URI(download_url)
         req_options = { use_ssl: (uri.scheme=='https') }
@@ -59,7 +59,7 @@ module Oubliette
       end
 
       def self.all
-        return all_local if local_mode
+        return all_local if local_mode?
         response = self.get('/preserved_files.json')
         raise FetchError, "Error fetching preserved_files: #{response.code} - #{response.message}" unless response.code == 200
         # TODO: Handle paging properly
@@ -79,15 +79,22 @@ module Oubliette
         'preserved_files'
       end
 
+      # to ingest in a batch, give parent batch in options[:parent]
       def self.ingest(file,options={})
         unless file.respond_to?(:read)
           file=StringIO.new(file.to_s)
         end
 
-        if local_mode
+        if local_mode?
           begin
             f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename))
             f.save!
+            if options[:parent]
+              parent_id = (options[:parent].is_a?(Oubliette::API::FileBatch) ? options[:parent].id : options[:parent].to_s)
+              local_parent = Oubliette::FileBatch.find(parent_id)
+              local_parent.ordered_members << f
+              local_parent.save
+            end
           rescue StandardError => e
             raise Oubliette::API::IngestError, "Unable to local ingest file: #{e.message}", e.backtrace
           end
@@ -115,8 +122,17 @@ module Oubliette
         query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename).each_with_object({}) do |(k,v),o|
           o[:"preserved_file[#{k}]"] = v
         end
+        
+        post_url = 'preserved_files.json'
+        if options[:parent]
+          if options[:parent].is_a?(Oubliette::API::FileBatch)
+            post_url = "file_batches/#{CGI.escape(options[:parent].id)}/preserved_files.json"
+          else
+            post_url = "file_batches/#{CGI.escape(options[:parent].to_s)}/preserved_files.json"
+          end
+        end
 
-        resp = self.post('/preserved_files.json', query: {
+        resp = self.post(post_url, query: {
             :'preserved_file[content]' => file
           }.merge(query_options) )
 

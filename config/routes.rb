@@ -3,6 +3,10 @@ Oubliette::Engine.routes.draw do
 
   get 'home' => 'static_pages#home'
 
+  resources :file_batches do
+    resources :preserved_files, only: [:new, :create]
+  end
+
   resources :preserved_files
   get '/preserved_files/:id/download', to: 'downloads#show', as: :download
 

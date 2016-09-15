@@ -1,6 +1,7 @@
 module Oubliette
   class PreservedFile < ActiveFedora::Base
     include ModelBase
+    include Hydra::Works::WorkBehavior
     include DurhamRails::NoidBehaviour
 
     has_subresource :content, class_name: 'ActiveFedora::File'
@@ -44,6 +45,11 @@ module Oubliette
           end
         end
       CODE
+    end
+    
+    def parent(reload=false)
+      @parent = nil if reload
+      @parent ||= ordered_by.to_a.find do |m| m.is_a? FileBatch end
     end
 
     def content_checksum(algorithm='md5')
@@ -94,5 +100,13 @@ module Oubliette
           (file.try(:path) ? File.basename(file.path) : nil) || 'unnamed_file'
       f
     end
+    
+    def as_json(*args)
+      super(*args).tap do |json|
+        parent_id = parent.try(:id)
+        json.merge!({'parent_id' => parent_id}) if parent_id.present?
+      end
+    end    
+    
   end
 end

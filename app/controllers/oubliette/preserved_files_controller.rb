@@ -17,6 +17,9 @@ module Oubliette
     protected
     
     def set_parent
+      if params[:file_batch_id].present?
+        @parent = Oubliette::FileBatch.find(params[:file_batch_id])
+      end
     end
 
     def new_resource(params={})
