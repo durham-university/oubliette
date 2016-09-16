@@ -66,6 +66,42 @@ RSpec.describe Oubliette::API::FileBatch do
     end
   end
   
+  describe ":create" do
+    let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy'} }
+    it "posts the resource" do
+      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { file_batch: {title: 'new batch', note: 'test note'}}}) \
+        .and_return(OpenStruct.new(code: 200, body: '{"resource":{"id":"123456","title":"new batch","note":"test note","type":"batch"}}'))
+      res = Oubliette::API::FileBatch.create(params)
+      expect(res).to be_a(Oubliette::API::FileBatch)
+      expect(res.id).to eql('123456')
+      expect(res.title).to eql('new batch')
+      expect(res.note).to eql('test note')
+    end
+  end
+  
+  describe ":create_local" do
+    before { 
+      expect(Oubliette::API::FileBatch).to receive(:local_mode?).and_return(true)
+      expect(Oubliette::API::FileBatch).to receive(:create_local).and_call_original
+      expect(Oubliette::API::FileBatch).not_to receive(:post)
+    }
+    let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy'} }
+    let(:local_class_double) { double('local class') }
+    it "creates the resource" do
+      expect(Oubliette::API::FileBatch).to receive(:local_class).and_return(local_class_double)
+      expect(local_class_double).to receive(:create) do |params|
+        double('instance').tap do |inst|
+          expect(inst).to receive(:as_json).and_return(params.stringify_keys.merge({'id'=>'123456','type'=>'batch'}))
+        end
+      end
+      res = Oubliette::API::FileBatch.create(params)
+      expect(res).to be_a(Oubliette::API::FileBatch)
+      expect(res.id).to eql('123456')
+      expect(res.title).to eql('new batch')
+      expect(res.note).to eql('test note')      
+      expect(res.ingestion_date).to be_present
+    end
+  end
 
   describe "#as_json" do
     it "adds attributes to json" do

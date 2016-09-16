@@ -59,6 +59,20 @@ module Oubliette
           end
         end
       end
+      
+      def self.create(params)
+        return self.create_local(params) if local_mode?
+        response = self.post("/file_batches.json", {body: {file_batch: params.slice(:title, :note) }} )
+        return nil unless response.code == 200
+        json = JSON.parse(response.body)
+        return nil unless json['resource']
+        Oubliette::API::FileBatch.from_json(json['resource'])
+      end
+      
+      def self.create_local(params)
+        local_batch = local_class.create(params.slice(:title, :note).merge(ingestion_date: DateTime.now))
+        Oubliette::API::FileBatch.from_json(local_batch.as_json)
+      end
 
       def self.model_name
         'file_batches'
