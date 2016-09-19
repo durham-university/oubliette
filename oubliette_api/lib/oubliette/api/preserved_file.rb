@@ -48,10 +48,12 @@ module Oubliette
       def download(&block)
         return download_local(&block) if local_mode?
         (username,password) = [self.class.authentication_config.try(:[],'username'), self.class.authentication_config.try(:[],'password')]
+        ca_file = self.class.authentication_config.try(:[],'ca_file')
         uri = URI(download_url)
         req_options = { use_ssl: (uri.scheme=='https') }
         req_options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE if [false,'false'].include?(Oubliette::API::config['verify_certificate'])
         Net::HTTP.start(uri.hostname, uri.port, req_options ) do |http|
+          http.ca_file = ca_file if ca_file.present?
           req = Net::HTTP::Get.new(uri)
           req.basic_auth(username, password) if username.present?
           http.request(req, &block)
