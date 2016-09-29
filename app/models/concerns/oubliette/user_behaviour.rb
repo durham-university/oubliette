@@ -9,6 +9,10 @@ module Oubliette
     def is_api_user?
       raise 'Override this'
     end
+    
+    def is_editor?
+      raise 'Override this'
+    end
 
     def is_registered?
       raise 'Override this'

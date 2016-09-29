@@ -13,9 +13,10 @@ module Oubliette
 
       if user.is_admin? || user.is_api_user?
         can :manage, :all
-      elsif user.is_registered?
+      elsif user.is_editor?
         can [:read,:new,:create], [Oubliette::PreservedFile]
         can [:download], ActiveFedora::File
+      elsif user.is_registered?
       else
       end
     end
