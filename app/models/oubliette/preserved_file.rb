@@ -2,11 +2,13 @@ module Oubliette
   class PreservedFile < ActiveFedora::Base
     include ModelBase
     include Hydra::Works::WorkBehavior
+    include DurhamRails::WithBackgroundJobs
     include DurhamRails::NoidBehaviour
 
     has_subresource :content, class_name: 'ActiveFedora::File'
     has_subresource :ingestion_log, class_name: 'ActiveFedora::File'
     has_subresource :preservation_log, class_name: 'ActiveFedora::File'
+    has_subresource :characterisation, class_name: 'ActiveFedora::File'
 
     # ActiveFedora::File also has original_name and mime_type.
     # These are really only relevant to the main content.
@@ -51,6 +53,14 @@ module Oubliette
       @parent = nil if reload
       @parent ||= ordered_by.to_a.find do |m| m.is_a? FileBatch end
     end
+    
+    def content_io
+      # TODO: change this to a streaming IO
+      readable = content.content || ''
+      readable = StringIO.new(readable) if readable.is_a? String
+      readable.rewind      
+      readable
+    end
 
     def content_checksum(algorithm='md5')
       digest = nil
@@ -67,10 +77,8 @@ module Oubliette
         return nil
       end
 
-      readable = content.content || ''
-      readable = StringIO.new(readable) if readable.is_a? String
-      readable.rewind
-
+      readable = content_io
+      
       buf = ""
       while readable.read(16384, buf)
         digest.update(buf)

@@ -91,6 +91,7 @@ module Oubliette
           begin
             f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename))
             f.save!
+            Oubliette::CharacterisationJob.new(resource: f).queue_job
             if options[:parent]
               parent_id = (options[:parent].is_a?(Oubliette::API::FileBatch) ? options[:parent].id : options[:parent].to_s)
               local_parent = Oubliette::FileBatch.find(parent_id)

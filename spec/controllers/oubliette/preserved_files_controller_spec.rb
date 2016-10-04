@@ -75,6 +75,10 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
         }
         let(:file_batch) { FactoryGirl.create(:file_batch) }
         
+        before {
+          expect(Oubliette.queue).to receive(:push).with(Oubliette::CharacterisationJob)
+        }
+        
         it "creates a new PreservedFile" do
           expect {
             post :create, {preserved_file: preserved_file_attributes}

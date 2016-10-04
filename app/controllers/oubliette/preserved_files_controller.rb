@@ -3,7 +3,7 @@ module Oubliette
     include DurhamRails::ModelControllerBase
 
     def self.presenter_terms
-      [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :ingestion_checksum, :content]
+      [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
     end
 
     def self.form_terms
@@ -15,6 +15,11 @@ module Oubliette
     end
 
     protected
+    
+    def create_reply(success)
+      Oubliette::CharacterisationJob.new(resource: @resource).queue_job
+      super(success)
+    end
     
     def set_parent
       if params[:file_batch_id].present?
