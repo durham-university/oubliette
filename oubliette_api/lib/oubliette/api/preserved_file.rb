@@ -126,12 +126,12 @@ module Oubliette
           o[:"preserved_file[#{k}]"] = v
         end
         
-        post_url = 'preserved_files.json'
+        post_url = '/preserved_files.json'
         if options[:parent]
           if options[:parent].is_a?(Oubliette::API::FileBatch)
-            post_url = "file_batches/#{CGI.escape(options[:parent].id)}/preserved_files.json"
+            post_url = "/file_batches/#{CGI.escape(options[:parent].id)}/preserved_files.json"
           else
-            post_url = "file_batches/#{CGI.escape(options[:parent].to_s)}/preserved_files.json"
+            post_url = "/file_batches/#{CGI.escape(options[:parent].to_s)}/preserved_files.json"
           end
         end
 
