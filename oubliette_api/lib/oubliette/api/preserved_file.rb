@@ -60,6 +60,10 @@ module Oubliette
         end
       end
 
+      def self.path_ingest?
+        @path_ingest ||= Oubliette::API.config.fetch('path_ingest', false)
+      end
+
       def self.all
         return all_local if local_mode?
         response = self.get('/preserved_files.json')
@@ -104,26 +108,31 @@ module Oubliette
           return from_json(f.as_json)
         end
 
-        # HTTParty requires the file to respond to these methods
-        unless file.respond_to?(:original_filename)
-          file.instance_variable_set(:@original_filename, (options[:original_filename] || 'unnamed_file') )
-          class << file
-            def original_filename
-              @original_filename
-            end
-          end
-        end
-        unless file.respond_to?(:content_type)
-          file.instance_variable_set(:@content_type, (options[:content_type] || 'application/octet-stream') )
-          class << file
-            def content_type
-              @content_type
-            end
-          end
-        end
-
         query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename).each_with_object({}) do |(k,v),o|
           o[:"preserved_file[#{k}]"] = v
+        end
+
+        if path_ingest?
+          query_options.merge!({ :'preserved_file[content_path]' => file.path })
+        else
+          # HTTParty requires the file to respond to these methods
+          unless file.respond_to?(:original_filename)
+            file.instance_variable_set(:@original_filename, (options[:original_filename] || 'unnamed_file') )
+            class << file
+              def original_filename
+                @original_filename
+              end
+            end
+          end
+          unless file.respond_to?(:content_type)
+            file.instance_variable_set(:@content_type, (options[:content_type] || 'application/octet-stream') )
+            class << file
+              def content_type
+                @content_type
+              end
+            end
+          end
+          query_options.merge!({ :'preserved_file[content]' => file })
         end
         
         post_url = '/preserved_files.json'
@@ -135,9 +144,7 @@ module Oubliette
           end
         end
 
-        resp = self.post(post_url, query: {
-            :'preserved_file[content]' => file
-          }.merge(query_options) )
+        resp = self.post(post_url, query: query_options)
 
         begin
           json = JSON.parse(resp.body)

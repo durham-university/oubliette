@@ -7,6 +7,11 @@ RSpec.describe Oubliette::API::PreservedFile do
   let( :file_fixture ) { fixture('test1.jpg') }
 
   it_behaves_like "model_common"
+  
+  before {
+    # reset memoised variable so that both settings can be tested
+    Oubliette::API::PreservedFile.instance_variable_set(:@path_ingest, nil)
+  }
 
   describe "all" do
     it "parses the response" do
@@ -88,9 +93,7 @@ RSpec.describe Oubliette::API::PreservedFile do
     before {
       expect(Oubliette::API::PreservedFile).to receive(:post) { |url,params|
         query = params[:query]
-        expect(query[:'preserved_file[content]']).to respond_to :read
-        expect(query[:'preserved_file[content]'].original_filename).not_to be_nil
-        expect(query[:'preserved_file[content]'].content_type).not_to be_nil
+        query_content_check.call(query)
         expect(query[:'preserved_file[title]']).to eql 'ingest title'
         expect(query[:'preserved_file[note]']).to eql 'ingest note'
         expect(query[:'preserved_file[ingestion_log]']).to eql 'ingestion log'
@@ -100,6 +103,24 @@ RSpec.describe Oubliette::API::PreservedFile do
         OpenStruct.new(body: response, code: response_code)
       }
     }
+    let(:query_content_check) { 
+      Proc.new do |query|
+        expect(query[:'preserved_file[content]']).to respond_to :read
+        expect(query[:'preserved_file[content]'].original_filename).not_to be_nil
+        expect(query[:'preserved_file[content]'].content_type).not_to be_nil
+      end
+    }
+    describe "when sending file path" do
+      let(:query_content_check) { 
+        Proc.new do |query|
+          expect(query[:'preserved_file[content_path]']).to eql(file_fixture.path)
+        end
+      }
+      it "ingests files" do
+        allow(Oubliette::API).to receive(:config).and_return({'path_ingest' => true})
+        Oubliette::API::PreservedFile.ingest(file_fixture, params)
+      end
+    end
     it "ingests files" do
       Oubliette::API::PreservedFile.ingest(file_fixture, params)
     end

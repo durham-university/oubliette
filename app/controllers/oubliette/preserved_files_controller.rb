@@ -32,8 +32,14 @@ module Oubliette
     end
 
     def resource_params
-      content_file = params.try(:[],'preserved_file').try(:delete,'content')
+      content_path = params.try(:[],'preserved_file').try(:delete,'content_path')
+      if content_path
+        content_file = resolve_content_path(content_path)
+      else
+        content_file = params.try(:[],'preserved_file').try(:delete,'content')
+      end
       content_type = params.try(:[],'preserved_file').try(:delete,'content_type')
+      original_filename = params.try(:[],'preserved_file').try(:[],'original_filename')
       ingestion_checksum = params.try(:[],'preserved_file').try(:delete,'ingestion_checksum')
 
       raise 'Cannot update file contents' if @resource && !@resource.new_record? && content_file
@@ -47,12 +53,27 @@ module Oubliette
         if content_file
           params['content'] = ActiveFedora::File.new
           params['content'].content = content_file
-          params['content'].mime_type = content_type || content_file.content_type || 'application/octet-stream'
-          params['content'].original_name = content_file.original_filename || 'unnamed_file'
+          params['content'].mime_type = content_type || content_file.try(:content_type) || 'application/octet-stream'
+          params['content'].original_name = original_filename || content_file.try(:original_filename) || 'unnamed_file'
         end
         params['ingestion_checksum'] = ingestion_checksum.to_s if ingestion_checksum
       end
     end
+    
+    protected
+    
+      def resolve_content_path(path)
+        ingestion_path = Oubliette.config['ingestion_path']
+        raise 'Ingestion from disk not supported' unless ingestion_path
+        ingestion_path += File::SEPARATOR unless ingestion_path.ends_with? File::SEPARATOR
+        unless File.absolute_path(path).start_with?(ingestion_path) && path.length > ingestion_path.length
+          raise "Not allowed to ingest from #{path}"
+        end
+        path = File.absolute_path(path)
+        raise "Ingestion file #{path} doesn't exist" unless File.exists?(path)
+        raise "Ingestion file #{path} is a directory" if File.directory?(path)
+        File.open(path,'rb')
+      end
     
   end
 end

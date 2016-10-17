@@ -113,8 +113,26 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
           new_preserved_file = Oubliette::PreservedFile.all.to_a.find do |preserved_file| preserved_file.title == preserved_file_attributes[:title] end
           expect(response).to redirect_to(new_preserved_file)
         end
+        
+        context "ingesting from path" do
+          let(:file_path) { '/tmp/test/aaa.jpg' }
+          let(:preserved_file_attributes) { 
+            FactoryGirl.attributes_for(:preserved_file, 
+              ingestion_checksum: 'md5:15eb7a5c063f0c4cdda6a7310b536ba4',
+              content_path: file_path,
+              content_type: 'image/jpeg' ) 
+          }
+          
+          it "ingests from a path" do
+            expect(controller).to receive(:resolve_content_path).with(file_path).and_return(uploaded_file)
+            expect {
+              post :create, {preserved_file: preserved_file_attributes}
+            }.to change(Oubliette::PreservedFile, :count).by(1)            
+          end
+        end
       end
 
+      
       context "with invalid params" do
         it "assigns a newly created but unsaved preserved file as @resource" do
           post :create, {preserved_file: invalid_attributes}
@@ -213,6 +231,32 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
         }.not_to change(Oubliette::PreservedFile, :count)
         expect(response).to redirect_to('/users/sign_in')
       end
+    end
+  end
+  
+  describe "#resolve_content_path" do
+    let(:file_path) { '/tmp/test/aaa.jpg' }
+    
+    it "returns file" do
+      expect(Oubliette).to receive(:config).and_return({'ingestion_path' => '/tmp/test'})
+      expect(File).to receive(:exists?).with(file_path).and_return(true)
+      expect(File).to receive(:directory?).with(file_path).and_return(false)
+      expect(File).to receive(:open).with(file_path,'rb').and_return(uploaded_file)
+      expect(controller.send(:resolve_content_path,file_path)).to eql(uploaded_file)
+    end
+    
+    it "doesn't return file if path ingestion is disabled" do
+      expect(Oubliette).to receive(:config).and_return({})
+      expect {
+        controller.send(:resolve_content_path,file_path)
+      }.to raise_error('Ingestion from disk not supported')
+    end
+    
+    it "doesn't return file if path isn't under ingestion path" do
+      expect(Oubliette).to receive(:config).and_return({'ingestion_path' => '/something'})
+      expect {
+        controller.send(:resolve_content_path,file_path)
+      }.to raise_error("Not allowed to ingest from #{file_path}")
     end
   end
 end
