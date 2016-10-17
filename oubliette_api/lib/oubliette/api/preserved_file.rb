@@ -52,8 +52,8 @@ module Oubliette
         uri = URI(download_url)
         req_options = { use_ssl: (uri.scheme=='https') }
         req_options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE if [false,'false'].include?(Oubliette::API::config['verify_certificate'])
+        req_options[:ca_file] = ca_file if ca_file.present?
         Net::HTTP.start(uri.hostname, uri.port, req_options ) do |http|
-          http.ca_file = ca_file if ca_file.present?
           req = Net::HTTP::Get.new(uri)
           req.basic_auth(username, password) if username.present?
           http.request(req, &block)
