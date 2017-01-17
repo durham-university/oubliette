@@ -29,6 +29,18 @@ module Oubliette
       end
     end    
     
+    def ordered_object_ids
+      # Optimise getting object_ids. PCDM default implementation does some
+      # unnecessary work. Note that this doesn't filter pcdm objects from other
+      # possible members. However, there really shouldn't be any other members.
+      ordered_members.association.target.target_ids
+    end
+    
+    def ordered_collection_ids
+      # There should be no sub-collections, and default implementation can be slow.
+      []
+    end
+    
     def self.all_top
       ActiveFedora::Base.where('has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_targets_ssim to=id}proxy_in_ssi:*")')
     end
