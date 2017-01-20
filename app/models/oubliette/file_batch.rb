@@ -1,7 +1,10 @@
 module Oubliette
   class FileBatch < ActiveFedora::Base
     include ModelBase
-    include Hydra::Works::CollectionBehavior
+    #include Hydra::Works::CollectionBehavior
+    include DurhamRails::FastContainer
+    fast_container_pcdm_compatibility
+    
     include DurhamRails::NoidBehaviour
     
     property :title, multiple: false, predicate: ::RDF::Vocab::DC.title

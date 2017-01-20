@@ -1,7 +1,10 @@
 module Oubliette
   class PreservedFile < ActiveFedora::Base
     include ModelBase
-    include Hydra::Works::WorkBehavior
+    #include Hydra::Works::WorkBehavior
+    include DurhamRails::FastContainerItem
+    fast_container_item_pcdm_compatibility
+    
     include DurhamRails::WithBackgroundJobs
     include DurhamRails::NoidBehaviour
 
