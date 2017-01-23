@@ -13,11 +13,30 @@ module Oubliette
     def self.resources_paging_sort
       'ingestion_date_dtsi desc'
     end
+    
+    def create
+      # This stops same file being ingested twice which could otherwise sometimes
+      # happen in some error conditions
+      if @parent
+        checksum = params.try(:[],'preserved_file').try(:[],'ingestion_checksum')
+        if checksum.present?
+          duplicate = @parent.ordered_members.from_solr.to_a.find do |m|
+            m.ingestion_checksum == checksum
+          end
+          if duplicate.present?
+            @resource = duplicate
+            return create_reply(true, false)
+          end
+        end
+      end
+      
+      super
+    end
 
     protected
     
-    def create_reply(success)
-      Oubliette::CharacterisationJob.new(resource: @resource).queue_job
+    def create_reply(success, characterise=true)
+      Oubliette::CharacterisationJob.new(resource: @resource).queue_job if characterise
       super(success)
     end
     

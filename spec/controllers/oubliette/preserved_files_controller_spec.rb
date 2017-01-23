@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Oubliette::PreservedFilesController, type: :controller do
 
   let(:preserved_file) { FactoryGirl.create(:preserved_file) }
-  let(:preserved_file_attributes) { FactoryGirl.attributes_for(:preserved_file) }
+  let(:preserved_file_attributes) { FactoryGirl.attributes_for(:preserved_file, :with_file) }
   let(:invalid_attributes) { skip("Add tests for invalid attributes") }
   let(:uploaded_file) { fixture_file_upload('test1.jpg','image/jpeg') }
 
@@ -112,6 +112,15 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
           post :create, {preserved_file: preserved_file_attributes}
           new_preserved_file = Oubliette::PreservedFile.all.to_a.find do |preserved_file| preserved_file.title == preserved_file_attributes[:title] end
           expect(response).to redirect_to(new_preserved_file)
+        end
+        
+        it "won't ingest a duplicate" do
+          expect {
+            post :create, {preserved_file: preserved_file_attributes, file_batch_id: file_batch.id}
+          }.to change(Oubliette::PreservedFile, :count).by(1)
+          expect {
+            post :create, {preserved_file: preserved_file_attributes, file_batch_id: file_batch.id}
+          }.not_to change(Oubliette::PreservedFile, :count)
         end
         
         context "ingesting from path" do
