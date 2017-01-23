@@ -45,7 +45,8 @@ module Oubliette
     end
     
     def self.all_top
-      ActiveFedora::Base.where('has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_targets_ssim to=id}proxy_in_ssi:*")')
+#      ActiveFedora::Base.where('has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_targets_ssim to=id}proxy_in_ssi:*")')
+      ActiveFedora::Base.where('has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_item_ids_sim to=id}has_model_ssim:\"Oubliette::FileBatch\"")')
     end
 
   end
