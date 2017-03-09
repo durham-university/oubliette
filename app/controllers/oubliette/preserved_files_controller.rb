@@ -93,6 +93,17 @@ module Oubliette
         raise "Ingestion file #{path} is a directory" if File.directory?(path)
         File.open(path,'rb')
       end
+      
+      def set_resource(resource = nil)
+        # Overridden to avoid loading resource from Solr, which would cause problems with 
+        # contained log files.
+        if resource
+          @resource = resource
+        else
+          @resource = self.class.model_class.find(params[:id])
+        end
+        self.instance_variable_set(:"@#{self.class.model_name.element}",@resource)
+      end      
     
   end
 end
