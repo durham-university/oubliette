@@ -13,6 +13,11 @@ module Oubliette
     def self.resources_paging_sort
       'ingestion_date_dtsi desc'
     end
+    
+    def index
+      @query = params['query']
+      super
+    end
 
     protected
     
@@ -26,11 +31,20 @@ module Oubliette
     def index_resources
       per_page = [[params.fetch('per_page', 20).to_i, 100].min, 5].max
       page = [params.fetch('page', 1).to_i, 1].max
-      self.class.index_resources(page, per_page)
+      self.class.index_resources(page, per_page, params['query'])
     end
     
-    def self.index_resources(page=1, per_page=20)
+    def self.index_resources(page=1, per_page=20, query=nil)
       resources = FileBatch.all_top
+      if query.present?
+        query = query.gsub(/[^[:alpha:]0-9\.'-]/,' ').strip
+        query = query.split(/\s+/).select do |s| s.length >= 2 end
+        query = query[0..9] if query.length > 10
+        if query.any?
+          solr_query = query.map do |t| "title_tesim:\"#{t}\"" end .join(' AND ')
+          resources = resources.where(solr_query)
+        end
+      end
       resources = self.resources_for_page(page: page, per_page: per_page, from: resources)
       resources
     end

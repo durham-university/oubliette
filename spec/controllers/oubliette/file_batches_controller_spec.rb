@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe Oubliette::FileBatchesController, type: :controller do
 
   let(:file_batch) { FactoryGirl.create(:file_batch) }
+  let(:file_batch2) { FactoryGirl.create(:file_batch, title: 'moo test') }
   let(:preserved_file) { FactoryGirl.create(:preserved_file) }
   let(:file_batch_attributes) { FactoryGirl.attributes_for(:file_batch) }
   let(:invalid_attributes) { skip("Add tests for invalid attributes") }
@@ -14,9 +15,9 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
     before { sign_in user }
     describe "GET #index" do
       it "assigns all file_batches and top level files as @resources" do
-        file_batch ; preserved_file # create by refencing
+        file_batch ; file_batch2 ; preserved_file # create by refencing
         get :index
-        expect(assigns(:resources).to_a).to match_array([file_batch, preserved_file])
+        expect(assigns(:resources).to_a).to match_array([file_batch, file_batch2, preserved_file])
       end
 
       describe "pagination" do
@@ -40,6 +41,15 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
           expect(assigns(:resources).to_a.size).to eql 10
           expect(assigns(:resources).first.title).to eql "Test batch 15"
           expect(assigns(:resources).last.title).to eql "Test batch 6"
+        end
+      end
+      
+      describe "searching" do
+        it "searches for batches" do
+          file_batch ; file_batch2 # create by reference
+          get :index, query: 'moo'
+          expect(assigns(:resources).to_a.size).to eql 1
+          expect(assigns(:resources).first.title).to eql "moo test"
         end
       end
     end

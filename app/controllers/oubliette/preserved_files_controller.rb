@@ -14,6 +14,11 @@ module Oubliette
       'ingestion_date_dtsi desc'
     end
     
+    def index
+      @query = params['query']
+      super
+    end
+    
     def create
       # This stops same file being ingested twice which could otherwise sometimes
       # happen in some error conditions

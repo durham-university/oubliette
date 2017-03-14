@@ -8,11 +8,15 @@
   <% if can?(:create, Oubliette::PreservedFile) %>
     <%= link_to("Add a new file", oubliette.polymorphic_path([:new,:preserved_file]), { class: 'btn btn-default' } ) %>
   <% end %>
-  <%= link_to("All files", oubliette.file_batches_path, { class: 'btn btn-default' }) %>
+  <% if can?(:index, Oubliette::FileBatch) %>
+    <%= link_to("All files", oubliette.file_batches_path, { class: 'btn btn-default' }) %>
+  <% end %>
 </p>
 
-<h2>Recent file batches</h2>
-<%
-  @resources = Oubliette::FileBatchesController.index_resources
-%>
-<%= render 'durham_rails/base_shared/index', model_name: 'preserved_file', model_class: Oubliette::PreservedFile, no_title: true, no_add: true, no_paging: true %>
+<% if can?(:index, Oubliette::FileBatch) %>
+  <h2>Recent file batches</h2>
+  <%
+    @resources = Oubliette::FileBatchesController.index_resources(1, 20, @query)
+  %>
+  <%= render 'durham_rails/base_shared/index', model_name: 'preserved_file', model_class: Oubliette::PreservedFile, no_title: true, no_add: true, no_paging: true %>
+<% end %>

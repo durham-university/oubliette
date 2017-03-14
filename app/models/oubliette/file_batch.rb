@@ -7,7 +7,9 @@ module Oubliette
     
     include DurhamRails::NoidBehaviour
     
-    property :title, multiple: false, predicate: ::RDF::Vocab::DC.title
+    property :title, multiple: false, predicate: ::RDF::Vocab::DC.title do |index|
+      index.as :stored_searchable
+    end
     property :note, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#admin_note')
 
     property :ingestion_date, multiple: false, predicate: ::RDF::Vocab::DC.dateSubmitted, class_name: 'DateTime' do |index|
