@@ -13,7 +13,7 @@
             <h1 class="modal-title">Contents for <%= key.to_s.humanize %></h1>
           </div>
           <div class="popup-tool-form">
-            <pre><%= file.content %></pre>
+            <pre><%= file.content.force_encoding('UTF-8') %></pre>
           </div>
         </div>
       </div>

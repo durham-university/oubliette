@@ -72,6 +72,8 @@ module Oubliette
       case algorithm.downcase
       when 'md5'
         digest = Digest::MD5.new
+      when 'sha1'
+        digest = Digest::SHA1.new
       when 'sha256', 'sha-256', 'sha'
         digest = Digest::SHA256.new
       when 'sha384', 'sha-384'
