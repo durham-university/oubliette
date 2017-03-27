@@ -19,6 +19,29 @@ module Oubliette
       super
     end
 
+    def create
+      if(params.try(:[],'no_duplicates')=='true')
+        # This stops the same file batch being created twice which could otherwise
+        # sometimes happen in some error conditions
+        title = params.try(:[],'file_batch').try(:[],'title')
+        if title.present?
+          duplicates = Oubliette::FileBatch.all.where(title: title)
+          now = DateTime.now.to_i
+          duplicates = duplicates.select do |d|
+            d.ordered_member_ids.blank? && # blank works with nil
+              (now - (d.ingestion_date.try(:to_i) || 0) < 3600)
+          end
+          if duplicates.length == 1
+            @resource = duplicates[0]
+            return create_reply(true)
+          end
+        end
+      end
+      
+      super
+    end
+
+
     protected
     
     def set_parent

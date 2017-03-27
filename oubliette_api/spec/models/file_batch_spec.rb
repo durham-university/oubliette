@@ -77,6 +77,15 @@ RSpec.describe Oubliette::API::FileBatch do
       expect(res.title).to eql('new batch')
       expect(res.note).to eql('test note')
     end
+    
+    it "passes on no_duplicates" do
+      params[:no_duplicates]='true'
+      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { file_batch: {title: 'new batch', note: 'test note'}, no_duplicates: 'true'}}) \
+        .and_return(OpenStruct.new(code: 200, body: '{"resource":{"id":"123456","title":"new batch","note":"test note","type":"batch"}}'))
+      res = Oubliette::API::FileBatch.create(params)
+      expect(res).to be_a(Oubliette::API::FileBatch)
+      expect(res.id).to eql('123456')
+    end
   end
   
   describe ":create_local" do

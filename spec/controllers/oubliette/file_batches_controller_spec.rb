@@ -95,6 +95,15 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
           new_file_batch = Oubliette::FileBatch.all.to_a.find do |file_batch| file_batch.title == file_batch_attributes[:title] end
           expect(response).to redirect_to(new_file_batch)
         end
+        
+        it "won't create a duplicate" do
+          expect {
+            post :create, {file_batch: file_batch_attributes, no_duplicates: 'true'}
+          }.to change(Oubliette::FileBatch, :count).by(1)
+          expect {
+            post :create, {file_batch: file_batch_attributes, no_duplicates: 'true'}
+          }.not_to change(Oubliette::FileBatch, :count)
+        end
       end
 
       context "with invalid params" do

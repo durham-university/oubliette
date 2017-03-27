@@ -62,7 +62,7 @@ module Oubliette
       
       def self.create(params)
         return self.create_local(params) if local_mode?
-        response = self.post("/file_batches.json", {body: {file_batch: params.slice(:title, :note) }} )
+        response = self.post("/file_batches.json", {body: {file_batch: params.slice(:title, :note) }.merge(params.slice(:no_duplicates))} )
         return nil unless response.code == 200
         json = JSON.parse(response.body)
         return nil unless json['resource']
