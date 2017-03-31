@@ -7,7 +7,7 @@ module Oubliette
     end
 
     def self.form_terms
-      [:title, :note, :content, :ingestion_log]
+      [:title, :note, :content, :ingestion_log, :job_tag]
     end
 
     def self.resources_paging_sort
@@ -20,19 +20,10 @@ module Oubliette
     end
     
     def create
-      # This stops same file being ingested twice which could otherwise sometimes
-      # happen in some error conditions
-      if @parent
-        checksum = params.try(:[],'preserved_file').try(:[],'ingestion_checksum')
-        if checksum.present?
-          duplicate = @parent.ordered_members.from_solr.to_a.find do |m|
-            m.ingestion_checksum == checksum
-          end
-          if duplicate.present?
-            @resource = duplicate
-            return create_reply(true, false)
-          end
-        end
+      duplicate = Oubliette::PreservedFile.find_job_duplicate(params.try(:[],'preserved_file').try(:[],'job_tag'))
+      if duplicate.present?
+        @resource = duplicate
+        return create_reply(true, false)
       end
       
       super

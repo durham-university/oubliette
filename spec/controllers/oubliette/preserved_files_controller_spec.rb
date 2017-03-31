@@ -116,10 +116,10 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
         
         it "won't ingest a duplicate" do
           expect {
-            post :create, {preserved_file: preserved_file_attributes, file_batch_id: file_batch.id}
+            post :create, {preserved_file: preserved_file_attributes.merge(job_tag: 'test_job/1'), file_batch_id: file_batch.id}
           }.to change(Oubliette::PreservedFile, :count).by(1)
           expect {
-            post :create, {preserved_file: preserved_file_attributes, file_batch_id: file_batch.id}
+            post :create, {preserved_file: preserved_file_attributes.merge(job_tag: 'test_job/1'), file_batch_id: file_batch.id}
           }.not_to change(Oubliette::PreservedFile, :count)
         end
         

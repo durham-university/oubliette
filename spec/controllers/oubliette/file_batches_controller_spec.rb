@@ -98,10 +98,10 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
         
         it "won't create a duplicate" do
           expect {
-            post :create, {file_batch: file_batch_attributes, no_duplicates: 'true'}
+            post :create, {file_batch: file_batch_attributes.merge(job_tag: 'test_job/1') }
           }.to change(Oubliette::FileBatch, :count).by(1)
           expect {
-            post :create, {file_batch: file_batch_attributes, no_duplicates: 'true'}
+            post :create, {file_batch: file_batch_attributes.merge(job_tag: 'test_job/1') }
           }.not_to change(Oubliette::FileBatch, :count)
         end
       end

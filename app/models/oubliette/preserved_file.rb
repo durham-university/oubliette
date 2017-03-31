@@ -1,6 +1,7 @@
 module Oubliette
   class PreservedFile < ActiveFedora::Base
     include ModelBase
+    include DurhamRails::JobTag
     #include Hydra::Works::WorkBehavior
     include DurhamRails::FastContainerItem
     fast_container_item_pcdm_compatibility

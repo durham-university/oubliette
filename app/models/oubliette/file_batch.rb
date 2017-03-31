@@ -1,6 +1,7 @@
 module Oubliette
   class FileBatch < ActiveFedora::Base
     include ModelBase
+    include DurhamRails::JobTag
     #include Hydra::Works::CollectionBehavior
     include DurhamRails::FastContainer
     fast_container_pcdm_compatibility

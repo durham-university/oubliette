@@ -5,6 +5,7 @@ module Oubliette
 
       attr_accessor :ingestion_date
       attr_accessor :note
+      attr_accessor :job_tag
 
       def initialize
         super
@@ -15,6 +16,7 @@ module Oubliette
         @ingestion_date = DateTime.parse(json['ingestion_date'].to_s) if date_time_present?(json['ingestion_date'])
         @note = json['note']
         @files = json['files'].map do |m_json| Oubliette::API::PreservedFile.from_json(m_json) end if json.key?('files')
+        @job_tag = json['job_tag']
       end
 
       def as_json(*args)
@@ -22,6 +24,7 @@ module Oubliette
         json['ingestion_date'] = @ingestion_date.to_s
         json['note'] = @note
         json['files'] = @files.map(&:as_json) if @files
+        json['job_tag'] = @job_tag
         json
       end
 
@@ -62,7 +65,7 @@ module Oubliette
       
       def self.create(params)
         return self.create_local(params) if local_mode?
-        response = self.post("/file_batches.json", {body: {file_batch: params.slice(:title, :note) }.merge(params.slice(:no_duplicates))} )
+        response = self.post("/file_batches.json", {body: {file_batch: params.slice(:title, :note, :job_tag) }} )
         return nil unless response.code == 200
         json = JSON.parse(response.body)
         return nil unless json['resource']
@@ -70,7 +73,7 @@ module Oubliette
       end
       
       def self.create_local(params)
-        local_batch = local_class.create(params.slice(:title, :note).merge(ingestion_date: DateTime.now))
+        local_batch = local_class.create(params.slice(:title, :note, :job_tag).merge(ingestion_date: DateTime.now))
         Oubliette::API::FileBatch.from_json(local_batch.as_json)
       end
 

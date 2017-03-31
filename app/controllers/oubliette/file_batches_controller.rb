@@ -7,7 +7,7 @@ module Oubliette
     end
 
     def self.form_terms
-      [:title, :note]
+      [:title, :note, :job_tag]
     end
 
     def self.resources_paging_sort
@@ -20,22 +20,10 @@ module Oubliette
     end
 
     def create
-      if(params.try(:[],'no_duplicates')=='true')
-        # This stops the same file batch being created twice which could otherwise
-        # sometimes happen in some error conditions
-        title = params.try(:[],'file_batch').try(:[],'title')
-        if title.present?
-          duplicates = Oubliette::FileBatch.all.where(title: title)
-          now = DateTime.now.to_i
-          duplicates = duplicates.select do |d|
-            d.ordered_member_ids.blank? && # blank works with nil
-              (now - (d.ingestion_date.try(:to_i) || 0) < 3600)
-          end
-          if duplicates.length == 1
-            @resource = duplicates[0]
-            return create_reply(true)
-          end
-        end
+      duplicate = Oubliette::FileBatch.find_job_duplicate(params.try(:[],'file_batch').try(:[],'job_tag'))
+      if duplicate.present?
+        @resource = duplicate
+        return create_reply(true)
       end
       
       super

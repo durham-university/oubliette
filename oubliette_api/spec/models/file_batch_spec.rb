@@ -2,7 +2,7 @@ require 'shared/model_common'
 
 RSpec.describe Oubliette::API::FileBatch do
   let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","title":"Testing","note":"Note for testing","type":"batch"},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","title":"New file","note":"","type":"batch"},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","title":"Jpeg test","note":"","type":"batch"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","title":"PDF test","note":"This is a pdf file"}]}| }
-  let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","title" => "PDF test","note" => "This is a pdf file", "type" => "batch"} }
+  let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","title" => "PDF test","note" => "This is a pdf file", "type" => "batch", "job_tag" => "test_job"} }
   let( :file_json_s ) { %q|{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Test file","note":"Note for testing","ingestion_checksum":null}| }
   let( :file_batch ) { Oubliette::API::FileBatch.from_json(json) }
 
@@ -67,24 +67,16 @@ RSpec.describe Oubliette::API::FileBatch do
   end
   
   describe ":create" do
-    let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy'} }
+    let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy', job_tag: 'test_job'} }
     it "posts the resource" do
-      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { file_batch: {title: 'new batch', note: 'test note'}}}) \
-        .and_return(OpenStruct.new(code: 200, body: '{"resource":{"id":"123456","title":"new batch","note":"test note","type":"batch"}}'))
+      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { file_batch: {title: 'new batch', note: 'test note', job_tag: 'test_job'}}}) \
+        .and_return(OpenStruct.new(code: 200, body: '{"resource":{"id":"123456","title":"new batch","note":"test note","job_tag":"test_job","type":"batch"}}'))
       res = Oubliette::API::FileBatch.create(params)
       expect(res).to be_a(Oubliette::API::FileBatch)
       expect(res.id).to eql('123456')
       expect(res.title).to eql('new batch')
       expect(res.note).to eql('test note')
-    end
-    
-    it "passes on no_duplicates" do
-      params[:no_duplicates]='true'
-      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { file_batch: {title: 'new batch', note: 'test note'}, no_duplicates: 'true'}}) \
-        .and_return(OpenStruct.new(code: 200, body: '{"resource":{"id":"123456","title":"new batch","note":"test note","type":"batch"}}'))
-      res = Oubliette::API::FileBatch.create(params)
-      expect(res).to be_a(Oubliette::API::FileBatch)
-      expect(res.id).to eql('123456')
+      expect(res.job_tag).to eql('test_job')
     end
   end
   
@@ -94,7 +86,7 @@ RSpec.describe Oubliette::API::FileBatch do
       expect(Oubliette::API::FileBatch).to receive(:create_local).and_call_original
       expect(Oubliette::API::FileBatch).not_to receive(:post)
     }
-    let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy'} }
+    let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy', job_tag: 'test_job'} }
     let(:local_class_double) { double('local class') }
     it "creates the resource" do
       expect(Oubliette::API::FileBatch).to receive(:local_class).and_return(local_class_double)
@@ -108,6 +100,7 @@ RSpec.describe Oubliette::API::FileBatch do
       expect(res.id).to eql('123456')
       expect(res.title).to eql('new batch')
       expect(res.note).to eql('test note')      
+      expect(res.job_tag).to eql('test_job')
       expect(res.ingestion_date).to be_present
     end
   end
@@ -116,6 +109,7 @@ RSpec.describe Oubliette::API::FileBatch do
     it "adds attributes to json" do
       json = file_batch.as_json
       expect(json['note']).to eql "This is a pdf file"
+      expect(json['job_tag']).to eql "test_job"
     end
   end
 
