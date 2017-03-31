@@ -4,16 +4,19 @@ RSpec.describe Oubliette::FixityJob do
 
   let(:preserved_file1) { FactoryGirl.create(:preserved_file, :with_file) }
   let(:preserved_file2) { FactoryGirl.create(:preserved_file, :with_file) }
+  let(:preserved_file3) { FactoryGirl.create(:preserved_file, :with_file) }
 
-  let(:job) { Oubliette::FixityJob.new(fixity_mode: [:fedora, :ingestion], max_fail_count: 20, file_limit: 10) }
+  let(:job) { Oubliette::FixityJob.new(fixity_mode: [:fedora, :ingestion], max_fail_count: 20, file_limit: 10, time_limit: -1 ) }
 
   describe "marshalling" do
+    let(:job) { Oubliette::FixityJob.new(fixity_mode: [:fedora, :ingestion], max_fail_count: 20, file_limit: 10, time_limit: 7) }
     let(:serial) { Marshal.dump(job) }
     let(:deserial) { Marshal.load(serial) }
     it "preserves variables" do
       expect(deserial.fixity_mode).to eql([:fedora, :ingestion])
       expect(deserial.max_fail_count).to eql(20)
       expect(deserial.file_limit).to eql(10)
+      expect(deserial.time_limit).to eql(7)
       expect(deserial.resource_id).to be_present
     end
   end
@@ -47,6 +50,25 @@ RSpec.describe Oubliette::FixityJob do
       preserved_file2.reload
       expect(preserved_file1.check_date).to eql(d1)
       expect(preserved_file2.check_date).to be > d2
+    end
+    
+    it "limits by check_date" do
+      d1 = DateTime.now - 10.days
+      d2 = DateTime.now - 5.days
+      preserved_file1.check_date = d1
+      preserved_file1.save
+      preserved_file2.check_date = d2
+      preserved_file2.save
+      preserved_file3 # create by reference, no check_date
+      expect(preserved_file3.check_date).not_to be_present
+      expect(job).to receive(:time_limit).at_least(:once).and_return(7)
+      job.run_job
+      preserved_file1.reload
+      preserved_file2.reload
+      preserved_file3.reload
+      expect(preserved_file1.check_date).to be > d1
+      expect(preserved_file2.check_date).to eql(d2)      
+      expect(preserved_file3.check_date).to be_present
     end
     
     it "aborts at max fails" do

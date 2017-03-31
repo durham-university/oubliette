@@ -60,11 +60,12 @@ module Oubliette
     end
     
     def content_io
-      # TODO: change this to a streaming IO
-      readable = content.content || ''
-      readable = StringIO.new(readable) if readable.is_a? String
-      readable.rewind      
-      readable
+      # NOTE: this won't pick up unsaved content in content.content
+      DurhamRails::Services::FedoraFileService::FedoraStreamIO.new(content)
+      #readable = content.content || ''
+      #readable = StringIO.new(readable) if readable.is_a? String
+      #readable.rewind      
+      #readable
     end
 
     def content_checksum(algorithm='md5')
