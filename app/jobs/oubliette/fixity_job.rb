@@ -39,6 +39,8 @@ module Oubliette
           log!(:info, "Reached time limit, stopping")
           break
         end
+        # Setting files.limit above doesn't appear to actually limit the query properly. A bug in RSolr or ActiveFedora.
+        break if file_limit.present? && file_limit>0 && check_count>=file_limit
         
         actor = Oubliette::FixityActor.new(pf,nil,{})
         actor.instance_variable_set(:@log, log)
