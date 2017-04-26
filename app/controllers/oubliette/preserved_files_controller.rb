@@ -78,16 +78,18 @@ module Oubliette
     protected
     
       def resolve_content_path(path)
-        ingestion_path = Oubliette.config['ingestion_path']
-        raise 'Ingestion from disk not supported' unless ingestion_path
-        ingestion_path += File::SEPARATOR unless ingestion_path.ends_with? File::SEPARATOR
-        unless File.absolute_path(path).start_with?(ingestion_path) && path.length > ingestion_path.length
-          raise "Not allowed to ingest from #{path}"
+        ingestion_paths = Array(Oubliette.config['ingestion_path'])
+        raise 'Ingestion from disk not supported' unless ingestion_paths.any?
+        ingestion_paths.each do |ingestion_path|
+          ingestion_path += File::SEPARATOR unless ingestion_path.ends_with? File::SEPARATOR
+          next unless File.absolute_path(path).start_with?(ingestion_path) && path.length > ingestion_path.length
+          abs_path = File.absolute_path(path)
+          raise "Ingestion file #{abs_path} doesn't exist" unless File.exists?(abs_path)
+          raise "Ingestion file #{abs_path} is a directory" if File.directory?(abs_path)
+          return File.open(abs_path,'rb')
         end
-        path = File.absolute_path(path)
-        raise "Ingestion file #{path} doesn't exist" unless File.exists?(path)
-        raise "Ingestion file #{path} is a directory" if File.directory?(path)
-        File.open(path,'rb')
+        
+        raise "Not allowed to ingest from #{path}"
       end
       
       def set_resource(resource = nil)

@@ -245,6 +245,7 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
   
   describe "#resolve_content_path" do
     let(:file_path) { '/tmp/test/aaa.jpg' }
+    let(:file_path2) { '/ingestion_temp/bbb.jpg'}
     
     it "returns file" do
       expect(Oubliette).to receive(:config).and_return({'ingestion_path' => '/tmp/test'})
@@ -259,6 +260,11 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
       expect {
         controller.send(:resolve_content_path,file_path)
       }.to raise_error('Ingestion from disk not supported')
+      
+      expect(Oubliette).to receive(:config).and_return({'ingestion_path' => []})
+      expect {
+        controller.send(:resolve_content_path,file_path)
+      }.to raise_error('Ingestion from disk not supported')
     end
     
     it "doesn't return file if path isn't under ingestion path" do
@@ -267,5 +273,23 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
         controller.send(:resolve_content_path,file_path)
       }.to raise_error("Not allowed to ingest from #{file_path}")
     end
+    
+    it "works with multiple ingestion paths" do
+      expect(Oubliette).to receive(:config).exactly(3).times.and_return({'ingestion_path' => ['/ingestion_temp/','/tmp/test']})
+      expect(File).to receive(:exists?).with(file_path).and_return(true)
+      expect(File).to receive(:directory?).with(file_path).and_return(false)
+      expect(File).to receive(:open).with(file_path,'rb').and_return(uploaded_file)
+      expect(controller.send(:resolve_content_path,file_path)).to eql(uploaded_file)
+
+      expect(File).to receive(:exists?).with(file_path2).and_return(true)
+      expect(File).to receive(:directory?).with(file_path2).and_return(false)
+      expect(File).to receive(:open).with(file_path2,'rb').and_return(uploaded_file)
+      expect(controller.send(:resolve_content_path,file_path2)).to eql(uploaded_file)
+      
+      expect {
+        controller.send(:resolve_content_path,'/something_else/aaa.jpg')
+      }.to raise_error("Not allowed to ingest from /something_else/aaa.jpg")      
+    end
+    
   end
 end
