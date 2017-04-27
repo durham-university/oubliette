@@ -82,8 +82,8 @@ module Oubliette
         raise 'Ingestion from disk not supported' unless ingestion_paths.any?
         ingestion_paths.each do |ingestion_path|
           ingestion_path += File::SEPARATOR unless ingestion_path.ends_with? File::SEPARATOR
-          next unless File.absolute_path(path).start_with?(ingestion_path) && path.length > ingestion_path.length
           abs_path = File.absolute_path(path)
+          next unless abs_path.start_with?(ingestion_path) && abs_path.length > ingestion_path.length
           raise "Ingestion file #{abs_path} doesn't exist" unless File.exists?(abs_path)
           raise "Ingestion file #{abs_path} is a directory" if File.directory?(abs_path)
           return File.open(abs_path,'rb')
