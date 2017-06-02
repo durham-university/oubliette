@@ -11,7 +11,8 @@ module Oubliette
     def start_fixity_job
       file_limit = params[:file_limit].try(:to_i) || 500
       time_limit = params[:time_limit].try(:to_i) || 30
-      success = Oubliette::FixityJob.new(file_limit: file_limit, time_limit: time_limit).queue_job
+      max_fail_count = params[:max_fail_count].try(:to_i) || 10
+      success = Oubliette::FixityJob.new(file_limit: file_limit, time_limit: time_limit, max_fail_count: max_fail_count).queue_job
       
       respond_to do |format|
         format.html { redirect_to DurhamRails::BackgroundJobContainer, notice: "Fixity job started" }

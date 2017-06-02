@@ -16,6 +16,8 @@
               <dd><%= number_field_tag(:file_limit, 500) %></dd>
               <dt><%= label_tag(:file_limit, "Minimum time since last check")%></dt>
               <dd><%= number_field_tag(:time_limit, 30) %> days</dd>
+              <dt><%= label_tag(:max_fail_count, "Maximum fixity errors")%></dt>
+              <dd><%= number_field_tag(:max_fail_count, 10) %></dd>
             </dl>
             <p>
               <input type="submit" class="btn btn-primary" value="Start job"/>
