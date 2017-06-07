@@ -39,6 +39,10 @@ RSpec.describe Oubliette::BackgroundJobContainersController, type: :routing do
     it "routes to #start_fixity_job" do
       expect(post: "/background_job_containers/start_fixity_job").to route_to("oubliette/background_job_containers#start_fixity_job")
     end
+    
+    it "routes to #start_export_job" do
+      expect(post: "/background_job_containers/start_export_job").to route_to("oubliette/background_job_containers#start_export_job")
+    end
 
   end
 end

@@ -159,6 +159,28 @@ module Oubliette
         from_json(json['resource'])
       end
       
+      # options should consist of 
+      #    export_ids: []  (required)
+      #    export_method: (optional, defaults to store)
+      #    export_destination: (optional, not all methods will require this)
+      #    export_note: (optional, free text note about export included in logs)
+      def self.export(options)
+        raise "Export not supported in local mode" if local_mode?
+        
+        post_url = "/background_job_containers/start_export_job.json"
+        query_options = options.slice(:export_ids, :export_method, :export_destination, :export_note)
+        resp = self.post(post_url, query: query_options)
+        
+        begin
+          json = JSON.parse(resp.body)
+        rescue StandardError => e
+          raise Oubliette::API::ExportError, "Error starting export job: #{e.message}", e.backtrace
+        end
+        raise Oubliette::API::IngestError, "Unable to start export job. #{json['error']}" unless json['status']==true
+        
+        json['job_id']
+      end
+      
       private
       
         def download_local

@@ -11,8 +11,12 @@ module Oubliette
     def set_oubliette_abilities(user)
       user ||= User.new
 
-      if user.is_admin? || user.is_api_user?
+      if user.is_admin?
         can :manage, :all
+      elsif user.is_api_user?
+        can :manage, :all
+        can :start_export_job, DurhamRails::BackgroundJobContainer
+        can :export, :all
       elsif user.is_editor?
         can [:read,:new,:create,:index], [Oubliette::PreservedFile, Oubliette::FileBatch]
         can [:download], ActiveFedora::File

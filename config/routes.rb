@@ -16,5 +16,6 @@ Oubliette::Engine.routes.draw do
   get '/background_job_containers/:resource_id/background_jobs', to: 'background_jobs#index', as: :durham_rails_background_job_container_background_jobs
   resources :background_jobs, only: [:show]
   post '/background_job_containers/start_fixity_job', to: 'background_job_containers#start_fixity_job', as: :start_fixity_job
+  post '/background_job_containers/start_export_job', to: 'background_job_containers#start_export_job', as: :start_export_job
   
 end

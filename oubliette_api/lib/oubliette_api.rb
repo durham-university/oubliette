@@ -10,6 +10,7 @@ module Oubliette
     autoload :FileBatch
     autoload :FetchError
     autoload :IngestError
+    autoload :ExportError
 
     autoload_under 'concerns' do
       autoload :ModelBase

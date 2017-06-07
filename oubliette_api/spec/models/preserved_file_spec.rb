@@ -85,6 +85,23 @@ RSpec.describe Oubliette::API::PreservedFile do
       expect(output.string).to eql('contentmorecontent')
     end
   end
+  
+  describe "::export" do
+    it "posts the request" do
+      expect(Oubliette::API::PreservedFile).to receive(:post) do |url, params|
+        expect(url).to eql("/background_job_containers/start_export_job.json")
+        query = params[:query]
+        expect(query[:export_ids]).to eql(['aaa', 'bbb'])
+        expect(query[:export_method]).to eql(:store)
+        expect(query[:export_destination]).to eql('/tmp/test')
+        expect(query[:export_note]).to eql('test note')
+        
+        OpenStruct.new(body: '{"status":true, "job_id":"testjobid"}', code: 200)
+      end
+      expect(Oubliette::API::PreservedFile).to receive(:local_mode?).and_return(false)
+      expect(Oubliette::API::PreservedFile.export(export_ids: ['aaa', 'bbb'], export_method: :store, export_destination: '/tmp/test', export_note: 'test note')).to eql('testjobid')
+    end
+  end
 
   describe "::ingest" do
     let( :params ) { {title: 'ingest title', note: 'ingest note', ingestion_log: 'ingestion log', ingestion_checksum: 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d' } }
