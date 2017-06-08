@@ -71,6 +71,26 @@ RSpec.describe Oubliette::BackgroundJobContainersController, type: :controller d
     end
   end
   
+  context "with registered user" do
+    let(:user) { FactoryGirl.create(:user) }
+    before { sign_in user }
+    
+    describe "POST #start_fixity_job" do
+      it "doesn't start the job" do
+        expect(Oubliette.queue).not_to receive(:push)
+        post :start_fixity_job
+      end
+    end
+    
+    describe "POST #start_export_job" do
+      it "doesn't start the job" do
+        expect(controller).not_to receive(:authorize_export_job_files)
+        expect(Oubliette.queue).not_to receive(:push)
+        post :start_export_job, { export_ids: ['aaa', 'bbb']}
+      end
+    end    
+  end
+  
   describe "#authorize_export_job_files" do
     let!(:file1) { FactoryGirl.create(:preserved_file) }
     let!(:file2) { FactoryGirl.create(:preserved_file) }
