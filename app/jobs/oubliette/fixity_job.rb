@@ -32,9 +32,13 @@ module Oubliette
       fail_count = 0
       check_count = 0
       aborted = false
-      files = PreservedFile.all.order('check_date_dtsi asc', 'ingestion_date_dtsi asc')
+      # Due to the large batch size and problems with .limit in ActiveFedora and RSolr,
+      # it's better to get files first from Solr even though they need to be then
+      # retrieved individually from Fedora.
+      files = PreservedFile.all.from_solr!.order('check_date_dtsi asc', 'ingestion_date_dtsi asc')
       files = files.limit(file_limit) unless file_limit.nil? || file_limit <= 0
-      files.each do |pf|
+      files.each do |pf_solr|
+        pf = PreservedFile.find(pf_solr.id)
         if time_limit_seconds > 0 && pf.check_date.present? && now-(pf.check_date.to_i) < time_limit_seconds
           log!(:info, "Reached time limit, stopping")
           break
