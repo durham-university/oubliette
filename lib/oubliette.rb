@@ -11,6 +11,7 @@ require 'hydra/works'
 require 'hydra/pcdm'
 require 'durham_rails'
 require "oubliette/engine"
+require 'zip'
 
 module Oubliette
   def self.queue

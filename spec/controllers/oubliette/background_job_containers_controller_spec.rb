@@ -49,6 +49,7 @@ RSpec.describe Oubliette::BackgroundJobContainersController, type: :controller d
         json = JSON.parse(response.body)
         expect(json['status']).to eql(true)
         expect(json['job_id']).to be_present
+        expect(DurhamRails::BackgroundJob.find(json['job_id'])).to be_present
       end
       
     end

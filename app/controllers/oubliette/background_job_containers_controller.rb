@@ -28,9 +28,12 @@ module Oubliette
       
       job = Oubliette::ExportJob.new(job_params)
       success = job.queue_job
+      
+      job_model = job.resource.background_jobs.to_a.find do |j| j.job_id == job.id end
+      
       respond_to do |format|
         format.html { redirect_to DurhamRails::BackgroundJobContainer, notice: "Export job started" }
-        format.json { render json: {status: success, job_id: job.id } }
+        format.json { render json: {status: success, job_id: job_model.id } }
       end
     end
     
