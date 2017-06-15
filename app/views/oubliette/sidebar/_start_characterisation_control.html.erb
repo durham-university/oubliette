@@ -1,0 +1,3 @@
+<% if can?(:start_characterisation, Oubliette::PreservedFile) %>
+<li><%= link_to("Start characterisation job", engine_paths.polymorphic_path(@resource, action: :start_characterisation), method: "POST") %></li>
+<% end %>

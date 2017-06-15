@@ -212,6 +212,24 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
         expect(response).to redirect_to(preserved_files_url)
       end
     end
+    
+    describe "POST #start_fixity_check" do
+      it "starts fixity job" do
+        preserved_file # create by referencing
+        expect_any_instance_of(Oubliette::SingleFixityJob).to receive(:queue_job).and_return(true)
+        post :start_fixity_check, {id: preserved_file.to_param}
+        expect(response).to redirect_to(preserved_file)
+      end
+    end
+    describe "POST #start_characterisation" do
+      it "starts characterisation job" do
+        preserved_file # create by referencing
+        expect_any_instance_of(Oubliette::CharacterisationJob).to receive(:queue_job).and_return(true)
+        post :start_characterisation, {id: preserved_file.to_param}
+        expect(response).to redirect_to(preserved_file)
+      end
+    end
+    
   end
 
   context "with anonymous user" do
@@ -239,6 +257,22 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
           delete :destroy, {id: preserved_file.to_param}
         }.not_to change(Oubliette::PreservedFile, :count)
         expect(response).to redirect_to('/users/sign_in')
+      end
+    end
+    describe "POST #start_fixity_check" do
+      it "fails authentication" do
+        preserved_file # create by referencing
+        expect_any_instance_of(Oubliette::SingleFixityJob).not_to receive(:queue_job)
+        post :start_fixity_check, {id: preserved_file.to_param}
+        expect(response).to redirect_to(root_url)
+      end
+    end
+    describe "POST #start_characterisation" do
+      it "fails authentication" do
+        preserved_file # create by referencing
+        expect_any_instance_of(Oubliette::CharacterisationJob).not_to receive(:queue_job)
+        post :start_characterisation, {id: preserved_file.to_param}
+        expect(response).to redirect_to(root_url)
       end
     end
   end

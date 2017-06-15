@@ -1,1 +1,6 @@
 <%= render 'durham_rails/base_shared/show' %>
+
+<% content_for :sidebar do %>
+  <%= render 'oubliette/sidebar/start_single_fixity_control' %>
+  <%= render 'oubliette/sidebar/start_characterisation_control' %>
+<% end %>

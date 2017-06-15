@@ -2,6 +2,11 @@ module Oubliette
   class PreservedFilesController < Oubliette::ApplicationController
     include DurhamRails::ModelControllerBase
 
+    before_action :authenticate_start_fixity_check!, only: [:start_fixity_check]
+    before_action :authenticate_start_characterisation!, only: [:start_characterisation]
+    before_action :set_fixity_check_resource, only: [:start_fixity_check]
+    before_action :set_characterisation_resource, only: [:start_characterisation]
+
     def self.presenter_terms
       [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
     end
@@ -28,8 +33,48 @@ module Oubliette
       
       super
     end
+    
+    def start_fixity_check
+      success = Oubliette::SingleFixityJob.new(resource: @resource).queue_job
+      
+      respond_to do |format|
+        format.html { 
+          if success
+            redirect_to @resource, notice: "Fixity job started" 
+          else
+            flash[:error] = "Error starting fixity job."            
+            redirect_to @resource
+          end
+        }
+        format.json { render json: {status: success} }
+      end      
+    end
+    
+    def start_characterisation
+      success = Oubliette::CharacterisationJob.new(resource: @resource).queue_job
+      respond_to do |format|
+        format.html { 
+          if success
+            redirect_to @resource, notice: "Characterisation job started" 
+          else
+            flash[:error] = "Error starting characterisation job."            
+            redirect_to @resource
+          end
+        }
+        format.json { render json: {status: success} }
+      end      
+    end
 
     protected
+
+    def authenticate_start_fixity_check!
+      authenticate_user!
+    end
+    
+    def authenticate_start_characterisation!
+      authenticate_user!
+    end
+    
     
     def create_reply(success, characterise=true)
       Oubliette::CharacterisationJob.new(resource: @resource).queue_job if characterise
@@ -90,6 +135,13 @@ module Oubliette
         end
         
         raise "Not allowed to ingest from #{path}"
+      end
+      
+      def set_fixity_check_resource
+        set_resource
+      end
+      def set_characterisation_resource
+        set_resource
       end
       
       def set_resource(resource = nil)

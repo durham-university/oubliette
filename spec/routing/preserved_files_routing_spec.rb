@@ -43,6 +43,14 @@ RSpec.describe Oubliette::PreservedFilesController, type: :routing do
     it "routes to #destroy" do
       expect(delete: "/preserved_files/1").to route_to("oubliette/preserved_files#destroy", id: "1")
     end
+    
+    it "routes to #start_fixity_check" do
+      expect(post: "/preserved_files/1/start_fixity_check").to route_to("oubliette/preserved_files#start_fixity_check", id: "1")
+    end
+    
+    it "routes to #start_characterisation" do
+      expect(post: "/preserved_files/1/start_characterisation").to route_to("oubliette/preserved_files#start_characterisation", id: "1")
+    end
 
   end
 end
