@@ -46,7 +46,7 @@ module Oubliette
     end
     
     def self.index_resources(page=1, per_page=20, query=nil)
-      resources = FileBatch.all_top
+      resources = FileBatch.all_top.from_solr!
       if query.present?
         query = query.gsub(/[^[:alpha:]0-9\.'-]/,' ').strip
         query = query.split(/\s+/).select do |s| s.length >= 2 end
