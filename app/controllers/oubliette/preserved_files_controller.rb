@@ -8,11 +8,11 @@ module Oubliette
     before_action :set_characterisation_resource, only: [:start_characterisation]
 
     def self.presenter_terms
-      [:title, :note, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
+      [:title, :note, :tag, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
     end
 
     def self.form_terms
-      [:title, :note, :content, :ingestion_log, :job_tag]
+      [:title, :note, :tag, :content, :ingestion_log, :job_tag]
     end
 
     def self.resources_paging_sort

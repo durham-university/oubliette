@@ -40,6 +40,10 @@ module Oubliette
     property :note, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#admin_note')
 
     property :ingestion_checksum, multiple: false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#ingestion_checksum')
+    
+    property :tag, multiple: true, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#tag') do |index|
+      index.as :symbol, :stored_searchable
+    end
 
     # Override log setters to accept strings in addition to files
     [:ingestion_log, :preservation_log].each do |key|

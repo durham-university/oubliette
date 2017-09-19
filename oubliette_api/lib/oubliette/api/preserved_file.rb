@@ -7,6 +7,7 @@ module Oubliette
       attr_accessor :status
       attr_accessor :check_date
       attr_accessor :note
+      attr_accessor :tag
       attr_accessor :ingestion_checksum
       attr_accessor :job_tag
 
@@ -20,6 +21,7 @@ module Oubliette
         @status = json['status']
         @check_date = DateTime.parse(json['check_date'].to_s) if date_time_present?(json['check_date'])
         @note = json['note']
+        @tag = json['tag']
         @ingestion_checksum = json['ingestion_checksum']
         @job_tag = json['job_tag']
       end
@@ -30,6 +32,7 @@ module Oubliette
         json['status'] = @status
         json['check_date'] = @check_date.to_s
         json['note'] = @note
+        json['tag'] = Array.wrap(@tag)
         json['ingestion_checksum'] = @ingestion_checksum
         json['job_tag'] = @job_tag
         json
@@ -96,7 +99,7 @@ module Oubliette
 
         if local_mode?
           begin
-            f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename, :job_tag))
+            f = local_class.ingest_file(file,options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :tag, :content_type, :original_filename, :job_tag))
             f.save!
             Oubliette::CharacterisationJob.new(resource: f).queue_job
             if options[:parent]
@@ -111,7 +114,8 @@ module Oubliette
           return from_json(f.as_json)
         end
 
-        query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :content_type, :original_filename, :job_tag).each_with_object({}) do |(k,v),o|
+        query_options = options.slice(:title, :ingestion_log, :ingestion_checksum, :note, :tag, :content_type, :original_filename, :job_tag).each_with_object({}) do |(k,v),o|
+          v = Array.wrap(v) if k == :tag
           o[:"preserved_file[#{k}]"] = v
         end
 

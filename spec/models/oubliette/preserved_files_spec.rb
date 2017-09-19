@@ -28,6 +28,22 @@ RSpec.describe Oubliette::PreservedFile do
       expect(preserved_file.preservation_log.content).to eql "Preservation log contents\nAnother log entry"
     end
   end
+  
+  describe "tags" do
+    let(:preserved_file) { FactoryGirl.create(:preserved_file, title: 'test1', tag: ['test','othertag']) }
+    let(:preserved_file2) { FactoryGirl.create(:preserved_file, title: 'test2', tag: ['test']) }
+    let(:preserved_file3) { FactoryGirl.create(:preserved_file, title: 'test3', tag: []) }
+    it "saves them" do
+      preserved_file.reload
+      expect(preserved_file.tag).to match_array(['test','othertag'])
+    end
+    it "can search with them" do
+      preserved_file ; preserved_file2 ; preserved_file3 # create by referencing
+      expect(Oubliette::PreservedFile.where(tag: 'test').map(&:id)).to match_array([preserved_file.id, preserved_file2.id])
+      expect(Oubliette::PreservedFile.where(tag: 'othertag').map(&:id)).to match_array([preserved_file.id])
+      expect(Oubliette::PreservedFile.where(tag: 'thirdtag').map(&:id)).to match_array([])
+    end
+  end
 
   describe "log setters" do
     it "can set ingestion log with a string" do

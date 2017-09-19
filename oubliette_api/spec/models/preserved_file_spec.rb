@@ -1,8 +1,8 @@
 require 'shared/model_common'
 
 RSpec.describe Oubliette::API::PreservedFile do
-  let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Testing","note":"Note for testing","ingestion_checksum":null},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","status":"not checked","check_date":null,"title":"New file","note":"","ingestion_checksum":null},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","status":"not checked","check_date":null,"title":"Jpeg test","note":"","ingestion_checksum":"md5:15eb7a5c063f0c4cdda6a7310b536ba4"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","status":"not checked","check_date":null,"title":"PDF test","note":"This is a pdf file","ingestion_checksum":null}]}| }
-  let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","status" => "not checked","check_date" => "2015-11-23T13:11:00.000+00:00","title" => "PDF test","note" => "This is a pdf file","ingestion_checksum" => "md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d", "job_tag" => "test_job"} }
+  let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Testing","note":"Note for testing","tag":["test","other"],"ingestion_checksum":null},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","status":"not checked","check_date":null,"title":"New file","note":"","tag":[],"ingestion_checksum":null},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","status":"not checked","check_date":null,"title":"Jpeg test","note":"","tag":[],"ingestion_checksum":"md5:15eb7a5c063f0c4cdda6a7310b536ba4"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","status":"not checked","check_date":null,"title":"PDF test","note":"This is a pdf file","tag":["test","other"],"ingestion_checksum":null}]}| }
+  let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","status" => "not checked","check_date" => "2015-11-23T13:11:00.000+00:00","title" => "PDF test","note" => "This is a pdf file", "tag" => ["test","other"],"ingestion_checksum" => "md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d", "job_tag" => "test_job"} }
   let( :file ) { Oubliette::API::PreservedFile.from_json(json) }
   let( :file_fixture ) { fixture('test1.jpg') }
 
@@ -49,6 +49,7 @@ RSpec.describe Oubliette::API::PreservedFile do
     it "adds attributes to json" do
       json = file.as_json
       expect(json['status']).to eql 'not checked'
+      expect(json['tag']).to eql(['test','other'])
       expect(json['ingestion_checksum']).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
       expect(json['job_tag']).to eql 'test_job'
     end
@@ -57,6 +58,7 @@ RSpec.describe Oubliette::API::PreservedFile do
   describe "#from_json" do
     it "parses everything" do
       expect(file.status).to eql 'not checked'
+      expect(file.tag).to eql(['test','other'])
       expect(file.ingestion_checksum).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
       expect(file.check_date).to eql DateTime.parse("2015-11-23T13:11:00.000+00:00")
       expect(file.ingestion_date).to eql DateTime.parse("2015-11-23T13:10:44.494+00:00")
@@ -104,7 +106,7 @@ RSpec.describe Oubliette::API::PreservedFile do
   end
 
   describe "::ingest" do
-    let( :params ) { {title: 'ingest title', note: 'ingest note', ingestion_log: 'ingestion log', ingestion_checksum: 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d' } }
+    let( :params ) { {title: 'ingest title', note: 'ingest note', tag: ['test'], ingestion_log: 'ingestion log', ingestion_checksum: 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d' } }
     let( :response ) { { status: :created, resource: json }.to_json }
     let( :response_code ) { 200 }
     let( :original_filename ) { nil }
@@ -116,6 +118,7 @@ RSpec.describe Oubliette::API::PreservedFile do
         query_content_check.call(query)
         expect(query[:'preserved_file[title]']).to eql 'ingest title'
         expect(query[:'preserved_file[note]']).to eql 'ingest note'
+        expect(query[:'preserved_file[tag]']).to eql(['test'])
         expect(query[:'preserved_file[ingestion_log]']).to eql 'ingestion log'
         expect(query[:'preserved_file[ingestion_checksum]']).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
         expect(query[:'preserved_file[original_filename]']).to eql(original_filename) if original_filename
