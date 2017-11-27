@@ -1,8 +1,8 @@
 require 'shared/model_common'
 
 RSpec.describe Oubliette::API::PreservedFile do
-  let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Testing","note":"Note for testing","tag":["test","other"],"ingestion_checksum":null},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","status":"not checked","check_date":null,"title":"New file","note":"","tag":[],"ingestion_checksum":null},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","status":"not checked","check_date":null,"title":"Jpeg test","note":"","tag":[],"ingestion_checksum":"md5:15eb7a5c063f0c4cdda6a7310b536ba4"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","status":"not checked","check_date":null,"title":"PDF test","note":"This is a pdf file","tag":["test","other"],"ingestion_checksum":null}]}| }
-  let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","status" => "not checked","check_date" => "2015-11-23T13:11:00.000+00:00","title" => "PDF test","note" => "This is a pdf file", "tag" => ["test","other"],"ingestion_checksum" => "md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d", "job_tag" => "test_job"} }
+  let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Testing","note":"Note for testing","tag":["test","other"],"ingestion_checksum":null,"parent_id":"parentid123"},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","status":"not checked","check_date":null,"title":"New file","note":"","tag":[],"ingestion_checksum":null},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","status":"not checked","check_date":null,"title":"Jpeg test","note":"","tag":[],"ingestion_checksum":"md5:15eb7a5c063f0c4cdda6a7310b536ba4"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","status":"not checked","check_date":null,"title":"PDF test","note":"This is a pdf file","tag":["test","other"],"ingestion_checksum":null}]}| }
+  let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","status" => "not checked","check_date" => "2015-11-23T13:11:00.000+00:00","title" => "PDF test","note" => "This is a pdf file", "tag" => ["test","other"],"ingestion_checksum" => "md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d", "job_tag" => "test_job", "parent_id" => "parentid123"} }
   let( :file ) { Oubliette::API::PreservedFile.from_json(json) }
   let( :file_fixture ) { fixture('test1.jpg') }
 
@@ -52,6 +52,7 @@ RSpec.describe Oubliette::API::PreservedFile do
       expect(json['tag']).to eql(['test','other'])
       expect(json['ingestion_checksum']).to eql 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d'
       expect(json['job_tag']).to eql 'test_job'
+      expect(json['parent_id']).to eql 'parentid123'
     end
   end
 
@@ -63,6 +64,15 @@ RSpec.describe Oubliette::API::PreservedFile do
       expect(file.check_date).to eql DateTime.parse("2015-11-23T13:11:00.000+00:00")
       expect(file.ingestion_date).to eql DateTime.parse("2015-11-23T13:10:44.494+00:00")
       expect(file.job_tag).to eql 'test_job'
+      expect(file.parent_id).to eql 'parentid123'
+    end
+  end
+
+  describe "#parent" do
+    let(:batch) { double('batch') }
+    it "finds the batch" do
+      expect(Oubliette::API::FileBatch).to receive(:find).with('parentid123').and_return(batch)
+      expect(file.parent).to eql(batch)
     end
   end
   

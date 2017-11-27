@@ -10,6 +10,7 @@ module Oubliette
       attr_accessor :tag
       attr_accessor :ingestion_checksum
       attr_accessor :job_tag
+      attr_accessor :parent_id
 
       def initialize
         super
@@ -24,6 +25,7 @@ module Oubliette
         @tag = json['tag']
         @ingestion_checksum = json['ingestion_checksum']
         @job_tag = json['job_tag']
+        @parent_id = json['parent_id']
       end
 
       def as_json(*args)
@@ -35,7 +37,16 @@ module Oubliette
         json['tag'] = Array.wrap(@tag)
         json['ingestion_checksum'] = @ingestion_checksum
         json['job_tag'] = @job_tag
+        json['parent_id'] = @parent_id
         json
+      end
+
+      def parent
+        if @parent_id
+          @parent ||= Oubliette::API::FileBatch.find(@parent_id)
+        else
+          nil
+        end
       end
 
       def download_url

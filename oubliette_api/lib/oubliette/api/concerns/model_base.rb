@@ -116,7 +116,7 @@ module Oubliette
         def local_fetch
           begin
             obj = local_class.find(id)
-            self.from_json(obj.as_json)
+            self.from_json(obj.as_json(include_children: true))
             self
           rescue StandardError => e
             raise Oubliette::API::FetchError, "Error doing a local_fetch for #{model_name} #{id}"
