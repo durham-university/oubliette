@@ -14,8 +14,9 @@ module Oubliette
       if user.is_admin?
         can :manage, :all
       elsif user.is_api_user?
-        can :manage, :all
-        can :start_export_job, DurhamRails::BackgroundJobContainer
+        can :call, Jobduct::Binding, binding_key: ['export', 'ingest_file', 'ingest_batch', 'create_batch', 'fixity_single', 'characterisation']
+        can :call, Jobduct::Callback
+        can [:show, :tunnel_callback], [Jobduct::Channel, Jobduct::Callback]
         can :export, :all
       elsif user.is_editor?
         can [:read,:new,:create,:index], [Oubliette::PreservedFile, Oubliette::FileBatch]

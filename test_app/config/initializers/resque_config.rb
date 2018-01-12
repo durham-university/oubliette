@@ -2,6 +2,6 @@ config = YAML::load(ERB.new(IO.read(File.join(Rails.root, 'config', 'redis.yml')
 Resque.redis = Redis.new(host: config[:host], port: config[:port], thread_safe: true)
 
 Resque.inline = Rails.env.test?
-Resque.redis.namespace = "hilda:#{Rails.env}"
+Resque.redis.namespace = "oubliette:#{Rails.env}"
 
 require 'resque/server' if Rails.env.development?

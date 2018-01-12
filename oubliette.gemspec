@@ -33,8 +33,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'kaminari'
 
   s.add_dependency 'durham_rails', '~> 0.0.16'
+  s.add_dependency 'jobduct'
 
-  s.add_dependency 'devise'
+  s.add_dependency 'devise', '~> 3.5.2'
   s.add_dependency 'devise_ldap_authenticatable'
   s.add_dependency 'cancancan', '~> 1.10'
 

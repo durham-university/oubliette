@@ -1,12 +1,13 @@
 module Oubliette
   class PreservedFile < ActiveFedora::Base
     include ModelBase
+    include GlobalID::Identification
     include DurhamRails::JobTag
     #include Hydra::Works::WorkBehavior
     include DurhamRails::FastContainerItem
     fast_container_item_pcdm_compatibility
     
-    include DurhamRails::WithBackgroundJobs
+    include DurhamRails::WithJobductChannels
     include DurhamRails::NoidBehaviour
 
     has_subresource :content, class_name: 'ActiveFedora::File'
@@ -22,9 +23,9 @@ module Oubliette
       index.as :stored_sortable
     end
 
-    STATUS_NOT_CHECKED = 'not checked'
-    STATUS_PASS = 'passing'
-    STATUS_ERROR = 'error'
+    STATUS_NOT_CHECKED = 'not checked'.freeze
+    STATUS_PASS = 'passing'.freeze
+    STATUS_ERROR = 'error'.freeze
 
     property :status, multiple:false, predicate: ::RDF::URI.new('http://collections.durham.ac.uk/ns/oubliette#preservation_status')
     validates_inclusion_of :status, in: [STATUS_NOT_CHECKED, STATUS_PASS, STATUS_ERROR], allow_nil: false

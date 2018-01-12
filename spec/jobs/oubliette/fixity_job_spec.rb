@@ -6,29 +6,18 @@ RSpec.describe Oubliette::FixityJob do
   let(:preserved_file2) { FactoryGirl.create(:preserved_file, :with_file) }
   let(:preserved_file3) { FactoryGirl.create(:preserved_file, :with_file) }
 
-  let(:job) { Oubliette::FixityJob.new(fixity_mode: [:fedora, :ingestion], max_fail_count: 20, file_limit: 10, time_limit: -1 ) }
+  let(:request) { {fixity_mode: [:fedora, :ingestion], max_fail_count: 20, file_limit: 10, time_limit: -1 } }
+  let(:channel) { Oubliette::FixityJob.new_channel(request).tap do |c| c.save end }
+  let(:job) { Oubliette::FixityJob.new(channel) }  
 
-  describe "marshalling" do
-    let(:job) { Oubliette::FixityJob.new(fixity_mode: [:fedora, :ingestion], max_fail_count: 20, file_limit: 10, time_limit: 7) }
-    let(:serial) { Marshal.dump(job) }
-    let(:deserial) { Marshal.load(serial) }
-    it "preserves variables" do
-      expect(deserial.fixity_mode).to eql([:fedora, :ingestion])
-      expect(deserial.max_fail_count).to eql(20)
-      expect(deserial.file_limit).to eql(10)
-      expect(deserial.time_limit).to eql(7)
-      expect(deserial.resource_id).to be_present
-    end
-  end
-
-  describe "#run_job" do
+  describe "#run" do
     it "checks preserved files" do
       preserved_file1 ; preserved_file2 # create by referencing
       expect(preserved_file1.preservation_log.content).to be_nil
       preserved_file1.content.content='moo' # cause fixity error
       preserved_file1.content.save
       expect_any_instance_of(Oubliette::FixityActor).to receive(:notify_fixity_error)
-      job.run_job
+      job.run
       preserved_file1.reload
       preserved_file2.reload
       expect(preserved_file1.preservation_log.content).to be_present
@@ -45,7 +34,7 @@ RSpec.describe Oubliette::FixityJob do
       preserved_file2.check_date = d2
       preserved_file2.save
       expect(job).to receive(:file_limit).at_least(:once).and_return(1)
-      job.run_job
+      job.run
       preserved_file1.reload
       preserved_file2.reload
       expect(preserved_file1.check_date).to eql(d1)
@@ -62,7 +51,7 @@ RSpec.describe Oubliette::FixityJob do
       preserved_file3 # create by reference, no check_date
       expect(preserved_file3.check_date).not_to be_present
       expect(job).to receive(:time_limit).at_least(:once).and_return(7)
-      job.run_job
+      job.run
       preserved_file1.reload
       preserved_file2.reload
       preserved_file3.reload
@@ -72,11 +61,11 @@ RSpec.describe Oubliette::FixityJob do
     end
     
     it "aborts at max fails" do
+      request[:max_fail_count] = 1
       preserved_file1 ; preserved_file2 # create by referencing
       expect_any_instance_of(Oubliette::FixityActor).to receive(:fedora_fixity!) do false end .once
       expect_any_instance_of(Oubliette::FixityActor).to receive(:ingestion_fixity!) do false end .once
-      job.max_fail_count=1
-      job.run_job
+      job.run
       expect(job.log.last.message).to start_with("Max fail count 1 reached")
     end
   end

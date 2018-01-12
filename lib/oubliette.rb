@@ -9,15 +9,12 @@ require 'active-fedora'
 require 'active_fedora/noid'
 require 'hydra/works'
 require 'hydra/pcdm'
+require 'jobduct'
 require 'durham_rails'
 require "oubliette/engine"
 require 'zip'
 
 module Oubliette
-  def self.queue
-    @queue ||= Oubliette::Resque::Queue.new('oubliette')
-  end
-
   def self.config
     @config ||= begin
       path = Rails.root.join('config','oubliette.yml')

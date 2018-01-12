@@ -70,11 +70,15 @@ module Oubliette
         req_options = { use_ssl: (uri.scheme=='https') }
         req_options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE if [false,'false'].include?(Oubliette::API::config['verify_certificate'])
         req_options[:ca_file] = ca_file if ca_file.present?
+        return_value = nil
         Net::HTTP.start(uri.hostname, uri.port, req_options ) do |http|
           req = Net::HTTP::Get.new(uri)
           req.basic_auth(username, password) if username.present?
-          http.request(req, &block)
+          http.request(req) do |resp|
+            return_value = block.call(resp)
+          end
         end
+        return_value
       end
 
       def self.path_ingest?

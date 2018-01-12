@@ -15,6 +15,7 @@ require 'capybara/rails'
 require 'active_fedora/cleaner'
 require 'database_cleaner'
 #require 'support/features_helpers'
+require 'jobduct/test'
 
 if ENV['COVERAGE']
   require 'simplecov'
@@ -47,6 +48,7 @@ ActiveRecord::Migration.maintain_test_schema!
 
 FactoryGirl.definition_file_paths = [File.expand_path("../factories", __FILE__)]
 FactoryGirl.find_definitions
+Jobduct::Test.load_factories
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
@@ -84,6 +86,8 @@ RSpec.configure do |config|
 
   config.include FactoryGirl::Syntax::Methods
 
+  config.include Jobduct::Test::Helpers   
+  
   config.before :each do |example|
     unless ([:view,:input,:module].include?(example.metadata) || example.metadata[:no_clean])
       ActiveFedora::Cleaner.clean!

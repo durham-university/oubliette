@@ -11,7 +11,54 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151112151829) do
+ActiveRecord::Schema.define(version: 20171207144830) do
+
+  create_table "jobduct_callbacks", force: :cascade do |t|
+    t.integer  "channel_id"
+    t.string   "title"
+    t.string   "call_url"
+    t.string   "remote_uri"
+    t.string   "status"
+    t.string   "success_code"
+    t.datetime "sent_at"
+    t.datetime "received_at"
+    t.datetime "processed_at"
+    t.text     "serial_sent_payload"
+    t.text     "serial_return_payload"
+  end
+
+  add_index "jobduct_callbacks", ["channel_id"], name: "jobduct_callbacks_by_channel"
+
+  create_table "jobduct_channels", force: :cascade do |t|
+    t.string   "title"
+    t.string   "channel_group"
+    t.string   "status_line"
+    t.string   "status"
+    t.string   "exec_status"
+    t.string   "handler_class"
+    t.string   "user"
+    t.string   "invoker"
+    t.string   "root_invoker"
+    t.string   "signal"
+    t.string   "callback_url"
+    t.string   "callback_uri"
+    t.text     "serial_properties"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "jobduct_channels", ["callback_uri"], name: "jobduct_channels_by_callback_uri"
+  add_index "jobduct_channels", ["channel_group"], name: "jobduct_channels_by_channel_group"
+  add_index "jobduct_channels", ["invoker"], name: "jobduct_channels_by_invoker"
+  add_index "jobduct_channels", ["root_invoker"], name: "jobduct_channels_by_root_invoker"
+
+  create_table "jobduct_logs", force: :cascade do |t|
+    t.integer "channel_id"
+    t.string  "highest_level"
+    t.text    "serial_messages"
+  end
+
+  add_index "jobduct_logs", ["channel_id"], name: "jobduct_logs_by_channel"
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false

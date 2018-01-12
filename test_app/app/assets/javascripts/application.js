@@ -11,4 +11,5 @@
 // about supported directives.
 //
 //= require oubliette/oubliette
+//= require jobduct/jobduct
 //= require_tree .

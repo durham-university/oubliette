@@ -1,28 +1,35 @@
 module Oubliette
   class ExportJob
-    include DurhamRails::Jobs::JobBase
-    include Oubliette::OublietteJob
-    include DurhamRails::Jobs::WithJobContainer
+    include Jobduct::ChannelJob
+    include DurhamRails::Channels::ChannelBase
+    include DurhamRails::Channels::WithJobContainer
 
-    attr_accessor :export_file_ids, :export_method, :export_destination, :export_note
+    request_reader :export_method, default: :store, &:to_sym
+    request_reader :export_file_ids do |val| Array.wrap(val) end
+    request_reader :export_destination, :export_note
     
-    def initialize(params={})
-      self.export_file_ids = Array.wrap(params.fetch(:export_file_ids))
-      self.export_method = params.fetch(:export_method, :store)
-      self.export_destination = params[:export_destination]
-      self.export_note = params[:export_note]
+    def self.new_channel(params)
+      parse_ids(params)
       super(params)
     end
-    
-    def dump_attributes
-      super + [:export_file_ids, :export_method, :export_destination, :export_note]
+
+    def self.parse_ids(params)
+      export_ids_raw = Array.wrap(params[:export_file_ids])
+      export_ids = []
+      export_ids_raw.each do |raw_id|
+        next unless raw_id.present?
+        raw_id.split(/[\s,]+/).each do |id|
+          export_ids << id
+        end
+      end    
+      params[:export_file_ids] = export_ids
     end
-    
+
     def default_job_container_category
       :oubliette
     end
     
-    def run_job
+    def run
       log!("Starting export job")
       
       actor = Oubliette::ExportActor.new(nil,{

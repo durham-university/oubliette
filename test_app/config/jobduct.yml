@@ -1,0 +1,15 @@
+default: &default
+  url_host: "http://localhost:3001/oubliette/"
+  lock_redis: ["redis://127.0.0.1:6379"]
+  queue_name: 'oubliette'
+  lock_redis_options:
+    retry_count:   3
+    retry_delay:   200
+    retry_jitter:  50
+
+development:
+  <<: *default
+test:
+  <<: *default
+production:
+  <<: *default

@@ -27,6 +27,7 @@ gem 'bootstrap-sass-extras'
 gem 'jquery-ui-rails'
 
 gem 'oubliette', path: File.expand_path("../..", __FILE__)
+gem 'jobduct', path: File.expand_path("../../../jobduct", __FILE__)
 gem 'durham_rails', path: File.expand_path("../../../durham_rails", __FILE__)
 
 gem 'kaminari', github: 'jcoyne/kaminari', branch: 'sufia'

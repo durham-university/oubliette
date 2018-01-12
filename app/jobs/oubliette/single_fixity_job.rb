@@ -1,22 +1,12 @@
 module Oubliette
   class SingleFixityJob
-    include DurhamRails::Jobs::JobBase
-    include Oubliette::OublietteJob
-    include DurhamRails::Jobs::WithResource
+    include Jobduct::ChannelJob
+    include DurhamRails::Channels::ChannelBase
+    include DurhamRails::Channels::WithResource
     
-    attr_accessor :fixity_mode
-    
-    # fixity_mode can be :fedora, :ingestion or an array containing both
-    def initialize(params={})
-      self.fixity_mode = Array.wrap(params.fetch(:fixity_mode, [:fedora, :ingestion]))
-      super(params)
-    end
-    
-    def dump_attributes
-      super + [:fixity_mode]
-    end
-    
-    def run_job
+    request_reader :fixity_mode, default: [:fedora, :ingestion] do |val| Array.wrap(val).map(&:to_sym) end
+        
+    def run
       log!("Starting #{fixity_mode.join(' and ')} fixity check")
       
       actor = Oubliette::FixityActor.new(resource,nil,{})
