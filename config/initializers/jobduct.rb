@@ -13,9 +13,3 @@ Jobduct.bindings = [
 
 # Change the runner adapter from ActiveJob to Rescue or something else if needed
 Jobduct.runner_adapter = Jobduct::ResqueAdapter.new
-
-# Set request authenticator if you need to login
-Jobduct.set_http_authenticator do |conn, host, path|
-  # TODO: Read from config
-  conn.basic_auth("apiuser", "apiuser")
-end
