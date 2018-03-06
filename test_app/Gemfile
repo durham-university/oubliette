@@ -16,8 +16,10 @@ gem 'devise'
 gem 'devise_ldap_authenticatable'
 gem 'cancancan', '~> 1.10'
 
-gem 'resque'
-gem 'resque-pool'
+#gem 'resque'
+#gem 'resque-pool'
+gem 'sidekiq'
+
 gem 'nest'
 gem 'redis-session-store'
 
