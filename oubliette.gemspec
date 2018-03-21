@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'bootstrap-sass-extras'
 
   s.add_dependency 'rubyzip'
-  s.add_dependency 'simple_form', '~> 3.1.0'
+  s.add_dependency 'simple_form', '<= 3.5.0' # Pinned to 3.5.0 because of https://github.com/plataformatec/simple_form/issues/1549
   s.add_dependency 'kaminari'
 
   s.add_dependency 'durham_rails', '~> 0.0.16'
