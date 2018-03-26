@@ -28,7 +28,7 @@ module Oubliette
       files = PreservedFile.all.from_solr!.order('check_date_dtsi asc', 'ingestion_date_dtsi asc')
       files = files.limit(file_limit) unless file_limit.nil? || file_limit <= 0
       files.each do |pf_solr|
-        return halt! if halted?
+        return process_halt! if halted?
         pf = PreservedFile.find(pf_solr.id)
         if time_limit_seconds > 0 && pf.check_date.present? && now-(pf.check_date.to_i) < time_limit_seconds
           log!(:info, "Reached time limit, stopping")
