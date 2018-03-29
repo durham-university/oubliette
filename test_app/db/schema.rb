@@ -11,7 +11,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171207144830) do
+ActiveRecord::Schema.define(version: 20180329085361) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "jobduct_callbacks", force: :cascade do |t|
     t.integer  "channel_id"
@@ -27,7 +30,7 @@ ActiveRecord::Schema.define(version: 20171207144830) do
     t.text     "serial_return_payload"
   end
 
-  add_index "jobduct_callbacks", ["channel_id"], name: "jobduct_callbacks_by_channel"
+  add_index "jobduct_callbacks", ["channel_id"], name: "jobduct_callbacks_by_channel", using: :btree
 
   create_table "jobduct_channels", force: :cascade do |t|
     t.string   "title"
@@ -47,10 +50,10 @@ ActiveRecord::Schema.define(version: 20171207144830) do
     t.datetime "updated_at"
   end
 
-  add_index "jobduct_channels", ["callback_uri"], name: "jobduct_channels_by_callback_uri"
-  add_index "jobduct_channels", ["channel_group"], name: "jobduct_channels_by_channel_group"
-  add_index "jobduct_channels", ["invoker"], name: "jobduct_channels_by_invoker"
-  add_index "jobduct_channels", ["root_invoker"], name: "jobduct_channels_by_root_invoker"
+  add_index "jobduct_channels", ["callback_uri"], name: "jobduct_channels_by_callback_uri", using: :btree
+  add_index "jobduct_channels", ["channel_group"], name: "jobduct_channels_by_channel_group", using: :btree
+  add_index "jobduct_channels", ["invoker"], name: "jobduct_channels_by_invoker", using: :btree
+  add_index "jobduct_channels", ["root_invoker"], name: "jobduct_channels_by_root_invoker", using: :btree
 
   create_table "jobduct_logs", force: :cascade do |t|
     t.integer "channel_id"
@@ -58,7 +61,7 @@ ActiveRecord::Schema.define(version: 20171207144830) do
     t.text    "serial_messages"
   end
 
-  add_index "jobduct_logs", ["channel_id"], name: "jobduct_logs_by_channel"
+  add_index "jobduct_logs", ["channel_id"], name: "jobduct_logs_by_channel", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false
@@ -79,8 +82,8 @@ ActiveRecord::Schema.define(version: 20171207144830) do
     t.string   "roles"
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true
-  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-  add_index "users", ["username"], name: "index_users_on_username", unique: true
+  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
+  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
+  add_index "users", ["username"], name: "index_users_on_username", unique: true, using: :btree
 
 end
