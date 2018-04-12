@@ -206,4 +206,20 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
       end
     end
   end
+
+  context "with editor user" do
+    let(:user) { FactoryGirl.create(:user, roles: ['editor', 'testgroup']) }
+    let!(:file_batch1) { FactoryGirl.create(:file_batch) }
+    let!(:file_batch2) { FactoryGirl.create(:file_batch, access_groups: ['testgroup']) }
+    let!(:file_batch3) { FactoryGirl.create(:file_batch, access_groups: ['testgroup']) }
+    let!(:preserved_file1) { FactoryGirl.create(:preserved_file) }
+    let!(:preserved_file2) { FactoryGirl.create(:preserved_file, access_groups: ['testgroup']) }
+    before { sign_in user }
+    describe "GET #index" do
+      it "assigns visible file_batches and top level files as @resources" do
+        get :index
+        expect(assigns(:resources).to_a).to match_array([file_batch2, file_batch3, preserved_file2])
+      end
+    end
+  end
 end

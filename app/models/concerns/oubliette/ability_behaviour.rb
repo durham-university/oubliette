@@ -19,8 +19,11 @@ module Oubliette
         can [:show, :tunnel_callback], [Jobduct::Channel, Jobduct::Callback]
         can :export, :all
       elsif user.is_editor?
-        can [:read,:new,:create,:index], [Oubliette::PreservedFile, Oubliette::FileBatch]
-        can [:download], ActiveFedora::File
+        can [:read], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_read?(user) end
+        can [:edit], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_edit?(user) end
+        can [:index], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_discover?(user) end
+        can [:new,:create], [Oubliette::PreservedFile, Oubliette::FileBatch]
+        can [:download], [Oubliette::PreservedFile] do |item| item.can_read?(user) end
       elsif user.is_registered?
       else
       end

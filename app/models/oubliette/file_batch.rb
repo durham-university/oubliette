@@ -9,6 +9,9 @@ module Oubliette
     
     include DurhamRails::WithJobductChannels
     include DurhamRails::NoidBehaviour
+
+    include DurhamRails::AccessControls
+    include DurhamRails::AccessGroups
     
     property :title, multiple: false, predicate: ::RDF::Vocab::DC.title do |index|
       index.as :stored_searchable
@@ -49,9 +52,15 @@ module Oubliette
       []
     end
     
-    def self.all_top
+    def self.all_top(user=nil)
 #      ActiveFedora::Base.where('has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_targets_ssim to=id}proxy_in_ssi:*")')
-      ActiveFedora::Base.where('has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_item_ids_sim to=id}has_model_ssim:\"Oubliette::FileBatch\"")')
+      query = 'has_model_ssim:"Oubliette::FileBatch" OR (has_model_ssim:"Oubliette::PreservedFile" AND -_query_:"{!join from=ordered_item_ids_sim to=id}has_model_ssim:\"Oubliette::FileBatch\"")'
+      if user && !user.is_admin?
+        groups_query = user.roles.map do |role| "access_groups_ssim:\"#{role}\"" end .join(' OR ')
+        groups_query = "access_groups_ssim:\"DUMMY_GROUP_DO_NOT_USE\"" if groups_query.blank? # this is to avoid an empty query which would return everything
+        query = "(#{query}) AND (#{groups_query})"
+      end
+      ActiveFedora::Base.where(query)
     end
 
   end

@@ -1,7 +1,7 @@
 <% file = record[key] %>
 <% unless file.new_record? %>
   <div class="well file_well">
-    <% if can?(:download, file) %>
+    <% if can?(:download, @resource) %>
       <h3><%= link_to 'Download', oubliette.download_path(@resource.id) %></h3>
     <% end %>
     <dl class="dl-horizontal">

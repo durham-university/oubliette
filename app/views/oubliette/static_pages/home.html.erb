@@ -16,7 +16,7 @@
 <% if can?(:index, Oubliette::FileBatch) %>
   <h2>Recent file batches</h2>
   <%
-    @resources = Oubliette::FileBatchesController.index_resources(1, 20, @query)
+    @resources = Oubliette::FileBatchesController.index_resources(1, 20, @query, current_user)
   %>
   <%= render 'durham_rails/base_shared/index', model_name: 'preserved_file', model_class: Oubliette::PreservedFile, no_title: true, no_add: true, no_paging: true %>
 <% end %>

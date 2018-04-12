@@ -4,11 +4,11 @@ module Oubliette
     include DurhamRails::SelectableResourceBehaviour
 
     def self.presenter_terms
-      [:title, :note, :tag, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
+      [:title, :note, :tag, :access_groups, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
     end
 
     def self.form_terms
-      [:title, :note, :tag, :content, :ingestion_log, :job_tag]
+      [:title, :note, :tag, :access_groups, :content, :ingestion_log, :job_tag]
     end
 
     def self.resources_paging_sort

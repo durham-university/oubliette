@@ -29,7 +29,7 @@ module Oubliette
       end
 
       def authorize_download!
-        authorize! :download, file
+        authorize! :download, asset
       end
 
       def file

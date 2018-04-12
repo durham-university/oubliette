@@ -4,11 +4,11 @@ module Oubliette
     include DurhamRails::ReceiveMovesBehaviour
     
     def self.presenter_terms
-      [:title, :note, :ingestion_date]
+      [:title, :note, :access_groups, :ingestion_date]
     end
 
     def self.form_terms
-      [:title, :note, :job_tag]
+      [:title, :note, :access_groups, :job_tag]
     end
 
     def self.resources_paging_sort
@@ -16,6 +16,7 @@ module Oubliette
     end
     
     def index
+      authenticate_user!
       @query = params['query']
       super
     end
@@ -43,11 +44,11 @@ module Oubliette
     def index_resources
       per_page = [[params.fetch('per_page', 20).to_i, 100].min, 5].max
       page = [params.fetch('page', 1).to_i, 1].max
-      self.class.index_resources(page, per_page, params['query'])
+      self.class.index_resources(page, per_page, params['query'], current_user)
     end
     
-    def self.index_resources(page=1, per_page=20, query=nil)
-      resources = FileBatch.all_top.from_solr!
+    def self.index_resources(page=1, per_page=20, query=nil, user=nil)
+      resources = FileBatch.all_top(user).from_solr!
       if query.present?
         query = query.gsub(/[^[:alpha:]0-9\.'-]/,' ').strip
         query = query.split(/\s+/).select do |s| s.length >= 2 end

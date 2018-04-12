@@ -10,6 +10,9 @@ module Oubliette
     include DurhamRails::WithJobductChannels
     include DurhamRails::NoidBehaviour
 
+    include DurhamRails::AccessControls
+    include DurhamRails::AccessGroups
+    
     has_subresource :content, class_name: 'ActiveFedora::File'
     has_subresource :ingestion_log, class_name: 'ActiveFedora::File'
     has_subresource :preservation_log, class_name: 'ActiveFedora::File'
