@@ -47,6 +47,7 @@ RSpec.describe Oubliette::IngestionJob do
       title: 'test title', 
       note: 'test note',
       tag: 'testtag',
+      access_groups: ['testgroup'],
       ingestion_checksum: 'md5:01234567890abcdef',
       content_path: content_path, 
       content_type: 'image/jpeg', 
@@ -68,6 +69,7 @@ RSpec.describe Oubliette::IngestionJob do
         expect(preserved_file.title).to eql('test title')
         expect(preserved_file.note).to eql('test note')
         expect(preserved_file.tag).to eql(['testtag'])
+        expect(preserved_file.access_groups).to eql(['testgroup'])
         expect(preserved_file.status).to eql(Oubliette::PreservedFile::STATUS_NOT_CHECKED)
         expect(preserved_file.ingestion_checksum).to eql('md5:01234567890abcdef')
         expect(preserved_file.ingestion_date).to be_present

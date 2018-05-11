@@ -4,7 +4,7 @@ module Oubliette
     include DurhamRails::Channels::ChannelBase
     include DurhamRails::Channels::WithResource
 
-    request_reader :files, :batch_title, :batch_note, :file_tag, :job_tag
+    request_reader :files, :batch_title, :batch_note, :file_tag, :job_tag, :access_groups
     variable_accessor :ingested_files, :batch
     result_accessor :files, as: :oubliette_files
     result_accessor :batch, as: :oubliette_batch
@@ -75,6 +75,7 @@ module Oubliette
         title: params[:batch_title] || 'unnamed batch', 
         job_tag: "#{params[:job_tag]}/batch",
         note: params[:batch_note], 
+        access_groups: params[:access_groups],
         ingestion_date: DateTime.now
       )
     end
@@ -103,6 +104,7 @@ module Oubliette
         ingestion_log: '',
         note: file[:note],
         tag: file[:tag] || file_tag,
+        access_groups: access_groups,
         job_tag: file_job_tag,
         parent_id: batch_id
       })

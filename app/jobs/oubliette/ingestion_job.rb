@@ -7,7 +7,7 @@ module Oubliette
 
     request_reader :content_type, default: 'application/octet-stream'
     request_reader :content_path, :temp_content_path, :original_filename, :ingestion_checksum,
-                   :ingestion_log, :note, :tag, :title, :job_tag,
+                   :ingestion_log, :note, :tag, :title, :job_tag, :access_groups,
                    :parent_id, :add_to_parent
     variable_accessor :state
 
@@ -69,6 +69,7 @@ module Oubliette
       resource.job_tag = job_tag
       resource.ingestion_date = DateTime.now
       resource.ingestion_checksum = ingestion_checksum
+      resource.access_groups = Array.wrap(access_groups)
 
       unless resource.save
         log!(:error, "Error saving preserved file") 
