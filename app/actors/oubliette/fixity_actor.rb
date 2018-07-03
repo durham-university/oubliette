@@ -36,7 +36,7 @@ module Oubliette
       def notify_fixity_error
         # mailer adds a log message
         mail = Oubliette::FixityNotificationMailer.fixity_failed(self)
-        mail.try(:deliver_now)
+        mail.deliver_now unless mail.nil? # For some strange reason, this doesn't work as mail.try(:deliver_now)
         true
       end
       

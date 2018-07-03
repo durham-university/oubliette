@@ -9,6 +9,7 @@ module Oubliette
         mail(to: recipients, subject: subject)
       else
         actor.log!("No email notification recipients defined.")
+        nil
       end
     end
     
