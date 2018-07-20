@@ -11,10 +11,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180329113108) do
+ActiveRecord::Schema.define(version: 20180611140908) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "jobduct_actions", force: :cascade do |t|
+    t.integer  "callback_id"
+    t.text     "serial_payload"
+    t.datetime "created_at"
+    t.string   "status"
+  end
+
+  add_index "jobduct_actions", ["callback_id"], name: "jobduct_actions_by_callback", using: :btree
 
   create_table "jobduct_callbacks", force: :cascade do |t|
     t.integer  "channel_id"
@@ -24,10 +33,12 @@ ActiveRecord::Schema.define(version: 20180329113108) do
     t.string   "status"
     t.string   "success_code"
     t.datetime "sent_at"
-    t.datetime "received_at"
+    t.datetime "finished_at"
     t.datetime "processed_at"
     t.text     "serial_sent_payload"
     t.text     "serial_return_payload"
+    t.datetime "last_action_at"
+    t.text     "serial_queued_actions"
   end
 
   add_index "jobduct_callbacks", ["channel_id"], name: "jobduct_callbacks_by_channel", using: :btree
