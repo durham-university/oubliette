@@ -20,9 +20,8 @@ module Oubliette
         can :export, :all
       elsif user.is_editor?
         can [:read], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_read?(user) end
-        can [:edit], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_edit?(user) end
-        can [:index], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_discover?(user) end
-        can [:new,:create], [Oubliette::PreservedFile, Oubliette::FileBatch]
+        can [:update, :destroy], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_edit?(user) end
+        can [:create], [Oubliette::PreservedFile, Oubliette::FileBatch]
         can [:download], [Oubliette::PreservedFile] do |item| item.can_read?(user) end
       elsif user.is_registered?
       else
