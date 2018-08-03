@@ -1,7 +1,8 @@
 module Oubliette
   class FileBatchesController < Oubliette::ApplicationController
     include DurhamRails::ModelControllerBase
-
+    include DurhamRails::ReceiveMovesBehaviour
+    
     def self.presenter_terms
       [:title, :note, :ingestion_date]
     end
@@ -60,6 +61,23 @@ module Oubliette
       resources
     end
     
+    def selection_bucket_key
+      'oubliette_all'
+    end    
 
+    def validate_move
+      return false unless super
+      selection_bucket.each do |res|
+        unless res.is_a?(Oubliette::PreservedFile)
+          error_message = "Can only move files into a batch"
+          respond_to do |format|
+            format.html { flash[:error] = error_message ; redirect_to @resource }
+            format.json { render json: { status: 'error', message: error_message } }
+          end          
+          return false
+        end
+      end
+      true
+    end    
   end
 end

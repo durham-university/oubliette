@@ -1,7 +1,8 @@
 module Oubliette
   class PreservedFilesController < Oubliette::ApplicationController
     include DurhamRails::ModelControllerBase
-
+    include DurhamRails::SelectableResourceBehaviour
+    
     before_action :authenticate_start_fixity_check!, only: [:start_fixity_check]
     before_action :authenticate_start_characterisation!, only: [:start_characterisation]
     before_action :set_fixity_check_resource, only: [:start_fixity_check]
@@ -75,6 +76,9 @@ module Oubliette
       authenticate_user!
     end
     
+    def selection_bucket_key
+      'oubliette_all'
+    end    
     
     def create_reply(success, characterise=true)
       Oubliette::CharacterisationJob.new(resource: @resource).queue_job if characterise
