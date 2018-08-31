@@ -10,7 +10,8 @@ module Oubliette
                    :ingestion_log, :note, :tag, :title, :job_tag, :access_groups,
                    :parent_id, :add_to_parent
     variable_accessor :state
-
+    request_reader :notifications
+    
     def self.new_channel(params)
       raise "No resource given" unless params[:resource] || params[:resource_id] || params[:parent] || params[:parent_id]
       resource = params[:resource]
@@ -85,6 +86,9 @@ module Oubliette
         end
       end
 
+      result[:preserved_file] = resource.as_json
+      send_notification(notification: 'post_ingest') if notify?('post_ingest')
+
       self.state = 'post'
       local_call('post_ingestion', {binding_key: 'post_ingestion', resource: resource})
     end
@@ -136,6 +140,10 @@ module Oubliette
         return true
       end
       return log!(:error, "Not allowed to ingest from #{path}") && false
+    end
+    
+    def notify?(event)
+      notifications == true || Array.wrap(notifications).include?(event)
     end
     
   end

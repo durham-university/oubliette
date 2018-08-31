@@ -5,7 +5,8 @@ module Oubliette
     include DurhamRails::Channels::WithResource
 
     request_reader :files, :batch_title, :batch_note, :file_tag, :job_tag, :access_groups
-    variable_accessor :ingested_files, :batch
+    request_reader :notifications
+    variable_accessor :ingested_files, :batch, :post_notify_sent
     result_accessor :files, as: :oubliette_files
     result_accessor :batch, as: :oubliette_batch
 
@@ -15,8 +16,10 @@ module Oubliette
     end  
 
     def run
-      self.ingested_files = []
-      callback(nil)      
+      self.ingested_files = self.files.map do |file|
+        file.merge(status: 'pending')
+      end
+      files_updated
     end
 
     def callback(callback)
@@ -40,23 +43,40 @@ module Oubliette
         end
       end
 
-      if self.ingested_files.last.nil?
-        ingest_next_file
-      elsif self.ingested_files.last[:status] == 'finished'
-        if self.ingested_files.count == files.count
-          if self.ingested_files.all? do |f| f[:status] == 'finished' end
-            self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
-            self.oubliette_batch = batch_id
-            self.log!("Job done")
-          end
+      files_updated
+    end
+
+    def notify(action=nil)
+      if action.try(:payload).try(:[],:notification) == 'post_ingest'
+        ingested_file = self.ingested_files.find do |f|
+          f[:file] == action.callback_params[:original_file]
+        end
+        if ingested_file
+          log!(:debug,"File #{ingested_file[:file]} at post-ingest")
+          ingested_file[:status] = 'post_ingest'
+          files_updated
         else
-          ingest_next_file
+          log!(:error, "Couldn't find file for notification #{action.callback_params[:original_file]}")
         end
       end
-      
     end
 
     private 
+
+    def files_updated
+      if self.ingested_files.any? do |file| file[:status] == 'pending' end
+        ingest_next_file unless self.ingested_files.any? do |file| file[:status] == 'oubliette' end
+      elsif self.ingested_files.all? do |file| file[:status] == 'finished' || file[:status] == 'post_ingest' end
+        if self.ingested_files.all? do |file| file[:status] == 'finished' end
+          self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
+          self.oubliette_batch = batch_id
+          self.log!("Job done")
+        elsif !self.post_notify_sent && notify?('post_ingest')
+          send_notification(notification: 'post_ingest')
+          self.post_notify_sent = true
+        end
+      end
+    end
 
     def batch
       self.resource
@@ -81,8 +101,8 @@ module Oubliette
     end
 
     def ingest_next_file
-      file = files[self.ingested_files.count]
-      self.ingested_files << { file: file[:file], status: 'sent' }
+      file = ingested_files.find do |file| file[:status] == 'pending' end
+      file[:status] = 'sent'
       file_title = file[:title] || "#{ingested_files.length}"
 
       file_job_tag = if job_tag.present?
@@ -106,7 +126,8 @@ module Oubliette
         tag: file[:tag] || file_tag,
         access_groups: access_groups,
         job_tag: file_job_tag,
-        parent_id: batch_id
+        parent_id: batch_id,
+        notifications: 'post_ingest'
       })
     end
 
@@ -114,6 +135,9 @@ module Oubliette
       "ingest_file"
     end
     
+    def notify?(event)
+      notifications == true || Array.wrap(notifications).include?(event)
+    end
     
   end
 end
