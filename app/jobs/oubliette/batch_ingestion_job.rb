@@ -67,9 +67,9 @@ module Oubliette
       if self.ingested_files.any? do |file| file[:status] == 'pending' end
         ingest_next_file unless self.ingested_files.any? do |file| file[:status] == 'oubliette' end
       elsif self.ingested_files.all? do |file| file[:status] == 'finished' || file[:status] == 'post_ingest' end
+        self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
+        self.oubliette_batch = batch_id
         if self.ingested_files.all? do |file| file[:status] == 'finished' end
-          self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
-          self.oubliette_batch = batch_id
           self.log!("Job done")
         elsif !self.post_notify_sent && notify?('post_ingest')
           send_notification(notification: 'post_ingest')
