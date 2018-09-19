@@ -108,10 +108,7 @@ RSpec.describe Oubliette::IngestionJob do
       context "with notifications enabled" do
         let(:request) { {resource_id: resource.id, notifications: 'post_ingest'} }
         it "notifies after ingest" do
-          expect(job).to receive(:send_notification).with(notification: 'post_ingest') do
-            expect(Jobduct.runner_adapter.started_channels).to be_empty
-            true
-          end
+          expect(job).to receive(:send_notification).with(notification: 'post_ingest').and_return(true)
           job.run
           expect(Jobduct.runner_adapter.started_channels).not_to be_empty        
         end
