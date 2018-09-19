@@ -3,7 +3,7 @@ default: &default
   lock_redis: ["redis://127.0.0.1:6379"]
   queue_name: 'oubliette'
   lock_redis_options:
-    retry_count:   3
+    retry_count:   100
     retry_delay:   200
     retry_jitter:  50
 

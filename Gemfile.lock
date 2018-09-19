@@ -47,6 +47,7 @@ PATH
   remote: /home/qgkb58/hydra/jobduct
   specs:
     jobduct (0.0.1)
+      aasm
       faraday
       jquery-rails
       rails (>= 4.2.4, < 5.0.0)
@@ -56,6 +57,8 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    aasm (5.0.1)
+      concurrent-ruby (~> 1.0)
     actionmailer (4.2.6)
       actionpack (= 4.2.6)
       actionview (= 4.2.6)
@@ -512,4 +515,4 @@ DEPENDENCIES
   web-console (~> 2.0)
 
 BUNDLED WITH
-   1.12.5
+   1.16.2
