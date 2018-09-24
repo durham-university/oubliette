@@ -7,7 +7,7 @@ RSpec.describe Oubliette::SingleFixityJob do
   let(:request) { {resource_id: preserved_file.id, fixity_mode: [:fedora, :ingestion]} }
   let(:channel) { Oubliette::SingleFixityJob.new_channel(request) }
   let(:job) { Oubliette::SingleFixityJob.new(channel) }  
-  let!(:actor) { Oubliette::FixityActor.new(preserved_file) }
+  let!(:actor) { Oubliette::FixityActor.new(preserved_file, nil, fedora_retry_count: 0) }
 
   describe "#run" do
     before {

@@ -8,8 +8,8 @@ RSpec.describe Oubliette::FixityActor do
     end
   }
   let(:content) { double('file_content') }
-  
-  let(:actor){ Oubliette::FixityActor.new(file,nil) }
+
+  let(:actor){ Oubliette::FixityActor.new(file,nil, fedora_retry_count: 0, retry_delay: 0.1, retry_jitter: 0.0) }
 
   describe "#notify_fixity_error" do
     let(:mail) { double('mail') }
@@ -46,6 +46,21 @@ RSpec.describe Oubliette::FixityActor do
       it "logs error and sends notifications" do
         expect(content).to receive(:check_fixity).and_return(false)
         expect(actor).to receive(:notify_fixity_error)
+        expect(actor.fedora_fixity!).to eql(false)
+        expect(file.preservation_log.content).to include('fixity error')
+      end
+
+      it "retries if set to do so" do
+        expect(content).to receive(:check_fixity).and_return(false).ordered
+        expect(content).to receive(:check_fixity).and_return(true).ordered
+        actor.fedora_retry_count = 1
+        expect(actor.fedora_fixity!).to eql(true)
+        expect(file.preservation_log.content).not_to include('fixity error')
+      end
+
+      it "fails after retries" do
+        expect(content).to receive(:check_fixity).twice.and_return(false)
+        actor.fedora_retry_count = 1
         expect(actor.fedora_fixity!).to eql(false)
         expect(file.preservation_log.content).to include('fixity error')
       end
