@@ -54,6 +54,7 @@ module Oubliette
         if ingested_file
           log!(:debug,"File #{ingested_file[:file]} at post-ingest")
           ingested_file[:status] = 'post_ingest'
+          ingested_file[:oubliette_id] = action.result[:preserved_file][:id]
           files_updated
         else
           log!(:error, "Couldn't find file for notification #{action.callback_params[:original_file]}")
