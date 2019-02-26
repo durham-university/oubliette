@@ -96,14 +96,14 @@ RSpec.describe Oubliette::BatchIngestionJob do
   describe "everything" do
     it "processes all files" do
       expect(job).to receive(:local_call).with(kind_of(String),hash_including(content_path: '/tmp/test1.tiff')).ordered do
-        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test1.tiff'}))
+        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test1.tiff'}, result: { preserved_file: { id: 'pf1id'}}))
       end
       expect(job).to receive(:local_call).with(kind_of(String),hash_including(content_path: '/tmp/test2.tiff')).ordered do
         job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test1.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf1id'}}))
-        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test2.tiff'}))
+        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test2.tiff'}, result: {preserved_file: {id: 'pf2id'}}))
       end
       expect(job).to receive(:local_call).with(kind_of(String),hash_including(content_path: '/tmp/test3.tiff')).ordered do
-        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test3.tiff'}))
+        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test3.tiff'}, result: {preserved_file: {id: 'pf3id'}}))
         job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test2.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf2id'}}))
         job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test3.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf3id'}}))
 
