@@ -18,6 +18,11 @@ module Oubliette
       raise 'Override this'
     end
 
+    # this is usually implemented directly through active record so
+    # don't override it here
+    # def default_access_group 
+    #   raise 'Override this'
+    # end
 
     def user_key
       send(self.class.user_key_attribute)

@@ -92,13 +92,23 @@ module Oubliette
         duplicate = Oubliette::FileBatch.find_job_duplicate("#{params[:job_tag]}/batch")
         return duplicate if duplicate.present?
       end
-      Oubliette::FileBatch.create(
+
+      user = User.find_by_user_key(params[:user])
+      raise "User not set" unless user.present?
+
+      batch = Oubliette::FileBatch.new(
         title: params[:batch_title] || 'unnamed batch', 
         job_tag: "#{params[:job_tag]}/batch",
         note: params[:batch_note], 
-        access_groups: params[:access_groups],
-        ingestion_date: DateTime.now
+        ingestion_date: DateTime.now,
+        access_groups: Array.wrap(params[:access_groups] || user.try(:default_access_group))
       )
+      batch.current_user = user
+      unless batch.valid?
+        raise "Invalid batch attributes. #{batch.errors.full_messages.join("\n")}"
+      end
+      batch.save
+      batch
     end
 
     def ingest_next_file

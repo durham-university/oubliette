@@ -8,7 +8,8 @@ RSpec.describe Oubliette::IngestionJob do
   let(:preserved_file) { FactoryGirl.create(:preserved_file, title: nil, note: nil) }
   let(:resource) { preserved_file }
 
-  let(:request) { {resource_id: resource.id} }
+  let(:user) { FactoryGirl.create(:user, :admin) }
+  let(:request) { {resource_id: resource.id, user: user.user_key} }
   let(:channel) { Oubliette::IngestionJob.new_channel(request) }
   let(:job) { Oubliette::IngestionJob.new(channel) }    
   
@@ -39,6 +40,21 @@ RSpec.describe Oubliette::IngestionJob do
         expect(job.content_path).to be_nil
       end
     end
+    context "with editor user" do
+      let(:resource) { file_batch }
+      let(:user) { FactoryGirl.create(:user, roles: ['editor', 'testgroup'], default_access_group: 'testgroup') }
+      it "sets default access group" do
+        expect(job.parent_id).to eql(file_batch.id)
+        expect(job.resource_id).not_to eql(job.parent_id)
+        expect(job.resource.access_groups).to eql(['testgroup'])
+      end
+      it "doesn't allow invalid access groups" do
+        request[:access_groups] = 'invalidgroup'
+        expect {
+          job
+        } .to raise_error("Invalid file attributes. Access groups current user cannot set these access groups")
+      end
+    end
   end
 
   describe "#run" do
@@ -47,12 +63,12 @@ RSpec.describe Oubliette::IngestionJob do
       title: 'test title', 
       note: 'test note',
       tag: 'testtag',
-      access_groups: ['testgroup'],
       ingestion_checksum: 'md5:01234567890abcdef',
       content_path: content_path, 
       content_type: 'image/jpeg', 
       original_filename: 'test.jpg',
-      ingestion_log: 'test ingestion log'
+      ingestion_log: 'test ingestion log',
+      user: user.user_key
     } }
     
     before {
@@ -69,7 +85,6 @@ RSpec.describe Oubliette::IngestionJob do
         expect(preserved_file.title).to eql('test title')
         expect(preserved_file.note).to eql('test note')
         expect(preserved_file.tag).to eql(['testtag'])
-        expect(preserved_file.access_groups).to eql(['testgroup'])
         expect(preserved_file.status).to eql(Oubliette::PreservedFile::STATUS_NOT_CHECKED)
         expect(preserved_file.ingestion_checksum).to eql('md5:01234567890abcdef')
         expect(preserved_file.ingestion_date).to be_present
@@ -106,7 +121,7 @@ RSpec.describe Oubliette::IngestionJob do
       end
 
       context "with notifications enabled" do
-        let(:request) { {resource_id: resource.id, notifications: 'post_ingest'} }
+        let(:request) { {resource_id: resource.id, notifications: 'post_ingest', user: user.user_key} }
         it "notifies after ingest" do
           expect(job).to receive(:send_notification).with(notification: 'post_ingest').and_return(true)
           job.run
@@ -142,13 +157,13 @@ RSpec.describe Oubliette::IngestionJob do
   describe "#ingestion_path" do
     let(:path) { '/tmp/test/test.tiff' }
     context "with content_path parameter" do
-      let(:request) { {resource_id: preserved_file.id, content_path: path} }      
+      let(:request) { {resource_id: preserved_file.id, content_path: path, user: user.user_key} }      
       it "returns the path" do
         expect(job.send(:ingestion_path)).to eql(path)
       end
     end
     context "with temp_content_path parameter" do
-      let(:request) { {resource_id: preserved_file.id, temp_content_path: path} }      
+      let(:request) { {resource_id: preserved_file.id, temp_content_path: path, user: user.user_key} }      
       it "returns the path" do
         expect(job.send(:ingestion_path)).to eql(path)
       end

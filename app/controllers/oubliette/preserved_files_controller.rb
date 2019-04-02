@@ -52,7 +52,11 @@ module Oubliette
       end
 
       def new_resource(params={})
-        PreservedFile.new( { status: PreservedFile::STATUS_NOT_CHECKED, ingestion_date: DateTime.now }.merge(params) )
+        PreservedFile.new( { 
+          status: PreservedFile::STATUS_NOT_CHECKED, 
+          ingestion_date: DateTime.now ,
+          access_groups: [current_user.try(:default_access_group)].select(&:present?)
+        }.merge(params) )
       end
 
       def resource_params

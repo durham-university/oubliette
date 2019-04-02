@@ -16,18 +16,34 @@ RSpec.describe Oubliette::BatchIngestionJob do
     resource_id: resource.id, 
     files: files, 
     notifications: 'post_ingest',
-    job_tag: 'testtag'
+    job_tag: 'testtag',
+    user: user.user_key
   } }
   let(:channel) { Oubliette::BatchIngestionJob.new_channel(request) }
   let(:job) { Oubliette::BatchIngestionJob.new(channel) }    
+  let(:user) { FactoryGirl.create(:user, :admin) }
 
   describe ":create_batch" do
     let(:batch) { Oubliette::BatchIngestionJob.create_batch(batch_params)}
-    let(:batch_params) { { batch_title: 'test title', batch_note: 'test note' } }
+    let(:batch_params) { { batch_title: 'test title', batch_note: 'test note', user: user.user_key } }
     it "creates a file batch" do
       expect(batch).to be_a(Oubliette::FileBatch)
       expect(batch.title).to eql('test title')
       expect(batch.note).to eql('test note')
+    end
+
+    context "with editor user" do
+      let(:user) { FactoryGirl.create(:user, roles: ['editor', 'testgroup'], default_access_group: 'testgroup') }
+      it "it sets default access groups" do
+        expect(batch).to be_a(Oubliette::FileBatch)
+        expect(batch.access_groups).to eql(['testgroup'])
+      end
+      it "doesn't create batch with invalid access_groups" do
+        batch_params[:access_groups] = 'invalidgroup'
+        expect {
+          batch
+        } .to raise_error("Invalid batch attributes. Access groups current user cannot set these access groups")
+      end
     end
   end
 

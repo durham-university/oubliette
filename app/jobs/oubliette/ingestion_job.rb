@@ -23,8 +23,21 @@ module Oubliette
         params.delete(:resource)
         params.delete(:resource_id)
         params.delete(:parent)
-        
-        preserved_file = Oubliette::PreservedFile.create(title: params[:title], status: Oubliette::PreservedFile::STATUS_NOT_CHECKED)
+
+        user = User.find_by_user_key(params[:user])
+        raise "User not set" unless user.present?
+
+        preserved_file = Oubliette::PreservedFile.new(
+          title: params[:title], 
+          status: Oubliette::PreservedFile::STATUS_NOT_CHECKED,
+          access_groups: Array.wrap(params[:access_groups] || user.try(:default_access_group))
+          )
+        preserved_file.current_user = user
+        unless preserved_file.valid?
+          raise "Invalid file attributes. #{preserved_file.errors.full_messages.join("\n")}"
+        end
+        preserved_file.save
+  
         params[:parent_id] = resource.id
         params[:resource] = preserved_file
         params[:add_to_parent] = true
@@ -50,9 +63,15 @@ module Oubliette
         log!(:error, "No content_path given")
         return
       end
+      unless user.present?
+        log!(:error, "User not set, cannot create a new file batch")
+        return
+      end
       return unless validate_ingestion_path(ingestion_path)
 
       return if check_duplicate
+
+      resource.current_user = user
 
       resource.content ||= ActiveFedora::File.new
       resource.content.content = open_file
@@ -70,7 +89,11 @@ module Oubliette
       resource.job_tag = job_tag
       resource.ingestion_date = DateTime.now
       resource.ingestion_checksum = ingestion_checksum
-      resource.access_groups = Array.wrap(access_groups)
+
+      unless resource.valid?
+        log!(:error,"Invalid resource attributes. #{resource.errors.full_messages.join("\n")}")
+        return
+      end
 
       unless resource.save
         log!(:error, "Error saving preserved file") 

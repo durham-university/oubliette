@@ -246,6 +246,37 @@ RSpec.describe Oubliette::PreservedFilesController, type: :controller do
       end
     end
   end
+
+  context "with editor user" do
+    let(:user) { FactoryGirl.create(:user, roles: ['editor', 'testgroup'], default_access_group: 'testgroup') }
+    let!(:preserved_file1) { FactoryGirl.create(:preserved_file) }
+    let!(:preserved_file2) { FactoryGirl.create(:preserved_file, access_groups: ['testgroup']) }
+    before { sign_in user }
+    describe "GET #index" do
+      it "assigns visible files as @resources" do
+        get :index
+        expect(assigns(:resources).to_a).to match_array([preserved_file2])
+      end
+    end
+    describe "GET #new" do
+      it "prefills default access group" do
+        get :new
+        expect(assigns(:resource).access_groups).to eql(['testgroup'])
+      end
+    end
+    describe "POST #create" do
+      it "creates files if valid access_groups" do
+        expect {
+          post :create, {preserved_file: preserved_file_attributes.merge(access_groups: ['testgroup'])}
+        }.to change(Oubliette::PreservedFile, :count).by(1)
+      end
+      it "doesn't let set invalid access_groups" do
+        expect {
+          post :create, {preserved_file: preserved_file_attributes.merge(access_groups: ['invalidgroup'])}
+        }.not_to change(Oubliette::PreservedFile, :count)
+      end
+    end
+  end
   
   describe "#resolve_content_path" do
     let(:file_path) { '/tmp/test/aaa.jpg' }

@@ -38,7 +38,10 @@ module Oubliette
     end
 
     def new_resource(params={})
-      FileBatch.new( { ingestion_date: DateTime.now }.merge(params) )
+      FileBatch.new( { 
+        ingestion_date: DateTime.now, 
+        access_groups: [current_user.try(:default_access_group)].select(&:present?)
+      }.merge(params) )
     end
     
     def index_resources

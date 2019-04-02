@@ -208,7 +208,7 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
   end
 
   context "with editor user" do
-    let(:user) { FactoryGirl.create(:user, roles: ['editor', 'testgroup']) }
+    let(:user) { FactoryGirl.create(:user, roles: ['editor', 'testgroup'], default_access_group: 'testgroup') }
     let!(:file_batch1) { FactoryGirl.create(:file_batch) }
     let!(:file_batch2) { FactoryGirl.create(:file_batch, access_groups: ['testgroup']) }
     let!(:file_batch3) { FactoryGirl.create(:file_batch, access_groups: ['testgroup']) }
@@ -219,6 +219,24 @@ RSpec.describe Oubliette::FileBatchesController, type: :controller do
       it "assigns visible file_batches and top level files as @resources" do
         get :index
         expect(assigns(:resources).to_a).to match_array([file_batch2, file_batch3, preserved_file2])
+      end
+    end
+    describe "GET #new" do
+      it "prefills default access group" do
+        get :new
+        expect(assigns(:resource).access_groups).to eql(['testgroup'])
+      end
+    end
+    describe "POST #create" do
+      it "creates batches if valid access_groups" do
+        expect {
+          post :create, {file_batch: file_batch_attributes.merge(access_groups: ['testgroup'])}
+        }.to change(Oubliette::FileBatch, :count).by(1)
+      end
+      it "doesn't let set invalid access_groups" do
+        expect {
+          post :create, {file_batch: file_batch_attributes.merge(access_groups: ['invalidgroup'])}
+        }.not_to change(Oubliette::FileBatch, :count)
       end
     end
   end

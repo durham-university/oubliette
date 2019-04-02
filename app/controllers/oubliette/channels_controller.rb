@@ -1,5 +1,8 @@
 module Oubliette
   class ChannelsController < Oubliette::ApplicationController
+    include DurhamRails::ImpersonateBehaviour
+    allow_impersonate [:show, :call, :tunnel_callback], user_key: :user
+    
     include DurhamRails::ChannelsControllerBehaviour
 
     protected

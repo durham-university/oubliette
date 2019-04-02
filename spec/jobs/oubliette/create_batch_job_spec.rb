@@ -2,7 +2,8 @@ require 'rails_helper'
 
 RSpec.describe Oubliette::CreateBatchJob do
 
-  let(:request) { {title: 'test title', note: 'test note'} }
+  let(:user) { FactoryGirl.create(:user, :admin) }
+  let(:request) { {title: 'test title', note: 'test note', user: user.user_key} }
   let(:channel) { Oubliette::CreateBatchJob.new_channel(request) }
   let(:job) { Oubliette::CreateBatchJob.new(channel) }    
   
