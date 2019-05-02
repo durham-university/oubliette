@@ -129,7 +129,7 @@ module Oubliette
         source_record: file[:source_record],
         description: file[:description],
         content_type: file[:content_type],
-        content_path: file[:file],
+        content_path: file[:path] || file[:file],
         original_filename: file[:original_filename],
         ingestion_checksum: "md5:#{file[:md5]}",
         ingestion_log: '',
