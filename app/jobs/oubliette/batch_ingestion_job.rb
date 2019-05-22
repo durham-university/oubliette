@@ -22,6 +22,10 @@ module Oubliette
       files_updated
     end
 
+    def retry
+      files_updated
+    end
+
     def callback(callback)
       if callback
         if callback.callback_params[:original_file]
@@ -29,6 +33,7 @@ module Oubliette
             f[:file] == callback.callback_params[:original_file]
           end
           if ingested_file
+            ingested_file[:callback_code] = callback.success_code
             if callback.success_code != Jobduct::Callback::CODE_ERROR
               ingested_file[:status] = 'finished'
               ingested_file[:oubliette_id] = callback.result[:preserved_file][:id]
@@ -71,6 +76,9 @@ module Oubliette
         self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
         self.oubliette_batch = batch_id
         if self.ingested_files.all? do |file| file[:status] == 'finished' end
+          self.success_code = Jobduct::Channel.severest_code( ingested_files.map do |f| 
+            f[:callback_code] || (f[:status] == 'finished' ? Jobduct::Channel::CODE_SUCCESS : Jobduct::Channel::CODE_ERROR)
+          end )
           self.log!("Job done")
         elsif !self.post_notify_sent && notify?('post_ingest')
           send_notification(notification: 'post_ingest')
