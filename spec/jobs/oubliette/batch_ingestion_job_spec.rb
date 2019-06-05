@@ -73,7 +73,7 @@ RSpec.describe Oubliette::BatchIngestionJob do
     end
 
     it "does nothing when nothing needs doing" do
-      job.ingested_files = [{file: 'test1.tiff', status: 'oubliette'}, {file: 'test2.tiff', status: 'pending'}]
+      job.ingested_files = [{file: 'test1.tiff', status: 'sent'}, {file: 'test2.tiff', status: 'pending'}]
       expect(job).not_to receive(:ingest_next_file)
       expect(job).not_to receive(:send_notification)
       job.send(:files_updated)
@@ -93,6 +93,7 @@ RSpec.describe Oubliette::BatchIngestionJob do
         parent_id: resource.id,
         job_tag: 'testtag/file//tmp/test2.tiff'
       ))
+      expect(job.ingested_files[1][:status]).to eql('sent')
     end
   end
 
