@@ -3,6 +3,8 @@ module Oubliette
     include DurhamRails::ModelControllerBase
     include DurhamRails::SelectableResourceBehaviour
 
+    helper Jobduct::JobductHelper
+
     def self.presenter_terms
       [:title, :note, :tag, :access_groups, :status, :check_date, :ingestion_date, :ingestion_log, :preservation_log, :characterisation, :ingestion_checksum, :content]
     end

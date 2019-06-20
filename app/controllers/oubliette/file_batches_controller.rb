@@ -3,6 +3,8 @@ module Oubliette
     include DurhamRails::ModelControllerBase
     include DurhamRails::ReceiveMovesBehaviour
     
+    helper Jobduct::JobductHelper
+
     def self.presenter_terms
       [:title, :note, :access_groups, :ingestion_date]
     end
