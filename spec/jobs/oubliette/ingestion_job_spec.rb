@@ -76,7 +76,7 @@ RSpec.describe Oubliette::IngestionJob do
     }
     context "with valid ingestion path" do
       before {
-        expect(job).to receive(:validate_ingestion_path).with(content_path).and_return(true)
+        expect(job).to receive(:validate_ingestion_path).with(content_path).at_least(:once).and_return(true)
       }
       it "ingests the content" do
         job.run
@@ -110,6 +110,15 @@ RSpec.describe Oubliette::IngestionJob do
           expect(job.resource.content.content).to be_present
           expect(job.resource.id).not_to eql(file_batch.id)
           expect(file_batch.files.map(&:id)).to include(job.resource.id)
+        end
+
+        it "doesn't add to parent if already there" do
+          expect(file_batch.ordered_members.count).to eql(0)
+          job.run
+          file_batch.reload
+          job.run
+          file_batch.reload
+          expect(file_batch.ordered_members.count).to eql(1)
         end
       end
 

@@ -102,10 +102,14 @@ module Oubliette
 
       if add_to_parent
         parent = Oubliette::FileBatch.find(parent_id)
-        parent.ordered_members << resource
-        unless parent.save
-          log!(:error, "Unable to save parent")
-          return
+        unless parent.ordered_members.map(&:id).include?(resource.id)
+          parent.ordered_members << resource
+          unless parent.save
+            log!(:error, "Unable to save parent")
+            return
+          end
+        else
+          log!(:info, "Parent already contains resource")
         end
       end
 
