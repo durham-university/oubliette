@@ -113,6 +113,7 @@ module Oubliette
         else
           @resource = self.class.model_class.find(params[:id])
         end
+        @resource.current_user = current_user
         self.instance_variable_set(:"@#{self.class.model_name.element}",@resource)
       end      
     
