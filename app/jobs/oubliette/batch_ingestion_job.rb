@@ -70,21 +70,33 @@ module Oubliette
     private 
 
     def files_updated
-      if self.ingested_files.any? do |file| file[:status] == 'pending' end
-        ingest_next_file unless self.ingested_files.any? do |file| file[:status] == 'sent' end
-      elsif self.ingested_files.all? do |file| file[:status] == 'finished' || file[:status] == 'post_ingest' end
+      if self.ingested_files.all? do |file| file[:status] == 'finished' end
         self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
         self.oubliette_batch = batch_id
-        if self.ingested_files.all? do |file| file[:status] == 'finished' end
-          self.success_code = Jobduct::Channel.severest_code( ingested_files.map do |f| 
-            f[:callback_code] || (f[:status] == 'finished' ? Jobduct::Channel::CODE_SUCCESS : Jobduct::Channel::CODE_ERROR)
-          end )
-          self.log!("Job done")
-        elsif !self.post_notify_sent && notify?('post_ingest')
-          send_notification(notification: 'post_ingest')
-          self.post_notify_sent = true
-        end
+        self.success_code = Jobduct::Channel.severest_code( ingested_files.map do |f| 
+          f[:callback_code] || (f[:status] == 'finished' ? Jobduct::Channel::CODE_SUCCESS : Jobduct::Channel::CODE_ERROR)
+        end )
+        self.log!("Job done")
+      elsif self.ingested_files.all? do |file| file[:status] == 'finished' || file[:status] == 'pending' || file[:status] == 'error' end
+        ingest_next_file
       end
+
+      # Changed to use less redundancy to reduce server load
+#      if self.ingested_files.any? do |file| file[:status] == 'pending' end
+#        ingest_next_file unless self.ingested_files.any? do |file| file[:status] == 'sent' end
+#      elsif self.ingested_files.all? do |file| file[:status] == 'finished' || file[:status] == 'post_ingest' end
+#        self.oubliette_files = ingested_files.map do |f| {file: f[:file], oubliette_id: f[:oubliette_id]} end
+#        self.oubliette_batch = batch_id
+#        if self.ingested_files.all? do |file| file[:status] == 'finished' end
+#          self.success_code = Jobduct::Channel.severest_code( ingested_files.map do |f| 
+#            f[:callback_code] || (f[:status] == 'finished' ? Jobduct::Channel::CODE_SUCCESS : Jobduct::Channel::CODE_ERROR)
+#          end )
+#          self.log!("Job done")
+#        elsif !self.post_notify_sent && notify?('post_ingest')
+#          send_notification(notification: 'post_ingest')
+#          self.post_notify_sent = true
+#        end
+#      end
     end
 
     def batch
