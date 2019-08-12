@@ -78,7 +78,11 @@ module Oubliette
         end )
         self.log!("Job done")
       elsif self.ingested_files.all? do |file| file[:status] == 'finished' || file[:status] == 'pending' || file[:status] == 'error' end
-        ingest_next_file
+        if self.ingested_files.any? do |file| file[:status] == 'pending' end
+          ingest_next_file
+        else
+          self.log!("Nothing more to ingest, some files failed.")
+        end
       end
 
       # Changed to use less redundancy to reduce server load

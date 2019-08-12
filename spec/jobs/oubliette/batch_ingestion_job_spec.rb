@@ -55,12 +55,13 @@ RSpec.describe Oubliette::BatchIngestionJob do
       job.send(:files_updated)
     end
 
-    it "detects when all post_ingest" do
-      job.ingested_files = [{file: 'test1.tiff', status: 'finished'}, {file: 'test2.tiff', status: 'post_ingest'}]
-      expect(job).not_to receive(:ingest_next_file)
-      expect(job).to receive(:send_notification).with(notification: 'post_ingest')
-      job.send(:files_updated)
-    end
+# Post ingestion handling disabled with reduced concurrency
+#    it "detects when all post_ingest" do
+#      job.ingested_files = [{file: 'test1.tiff', status: 'finished'}, {file: 'test2.tiff', status: 'post_ingest'}]
+#      expect(job).not_to receive(:ingest_next_file)
+#      expect(job).to receive(:send_notification).with(notification: 'post_ingest')
+#      job.send(:files_updated)
+#    end
 
     it "detects when job done" do
       expect(job.oubliette_files).to be_nil
@@ -113,16 +114,19 @@ RSpec.describe Oubliette::BatchIngestionJob do
   describe "everything" do
     it "processes all files" do
       expect(job).to receive(:local_call).with(kind_of(String),hash_including(content_path: '/tmp/test1.tiff')).ordered do
-        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test1.tiff'}, result: { preserved_file: { id: 'pf1id'}}))
+        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test1.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf1id'}}))
+#        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test1.tiff'}, result: { preserved_file: { id: 'pf1id'}}))
       end
       expect(job).to receive(:local_call).with(kind_of(String),hash_including(content_path: '/tmp/test2.tiff')).ordered do
-        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test1.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf1id'}}))
-        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test2.tiff'}, result: {preserved_file: {id: 'pf2id'}}))
+        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test2.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf2id'}}))
+#        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test1.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf1id'}}))
+#        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test2.tiff'}, result: {preserved_file: {id: 'pf2id'}}))
       end
       expect(job).to receive(:local_call).with(kind_of(String),hash_including(content_path: '/tmp/test3.tiff')).ordered do
-        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test3.tiff'}, result: {preserved_file: {id: 'pf3id'}}))
-        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test2.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf2id'}}))
         job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test3.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf3id'}}))
+#        job.notify(OpenStruct.new(payload: {notification: 'post_ingest'}, callback_params: {original_file: '/tmp/test3.tiff'}, result: {preserved_file: {id: 'pf3id'}}))
+#        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test2.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf2id'}}))
+#        job.callback(OpenStruct.new(callback_params: {original_file: '/tmp/test3.tiff'}, success_code: Jobduct::Callback::CODE_SUCCESS, result: {preserved_file: {id: 'pf3id'}}))
 
         job.ingested_files.each do |file|
           expect(file[:status]).to eql('finished')
