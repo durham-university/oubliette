@@ -4,6 +4,7 @@ module Oubliette
     include DurhamRails::Channels::ChannelBase
     include DurhamRails::Channels::WithResource
     include Jobduct::WithTempFiles
+    include DurhamRails::Retry
 
     request_reader :content_type, default: 'application/octet-stream'
     request_reader :content_path, :temp_content_path, :original_filename, :ingestion_checksum,
@@ -95,7 +96,11 @@ module Oubliette
         return
       end
 
-      unless resource.save
+      success = self.retry(retry_log(self, :warning, "saving content", increasing_delay)) do
+        resource.save
+      end
+
+      unless success
         log!(:error, "Error saving preserved file") 
         return
       end

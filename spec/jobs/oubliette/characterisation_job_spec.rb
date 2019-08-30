@@ -15,9 +15,12 @@ RSpec.describe Oubliette::CharacterisationJob do
         actor
       end      
     }    
+    let(:characterisation_doc) { double('characterisation doc', to_s: 'characterisation doc') }
     it "runs characterisation actor" do
-      expect(actor).to receive(:set_characterisation)
+      expect(actor).to receive(:characterisation).and_return(characterisation_doc)
       job.run
+      file.reload
+      expect(file.characterisation.content).to eql('characterisation doc')
     end
   end
 
