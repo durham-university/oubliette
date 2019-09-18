@@ -4,6 +4,9 @@ module Oubliette
     # It's replicated here so we don't need to depend on hydra-head and all it's
     # dependencies just for the download behaviour.
 
+    include DurhamRails::ImpersonateBehaviour
+    allow_impersonate [:show], user_key: :user
+
     before_action :authenticate_user!
     before_filter :authorize_download!
 

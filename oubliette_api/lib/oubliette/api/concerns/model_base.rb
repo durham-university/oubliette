@@ -19,7 +19,8 @@ module Oubliette
         attr_accessor :title
       end
 
-      def initialize
+      def initialize(user)
+        @user = user
       end
 
       def local_mode?
@@ -46,7 +47,7 @@ module Oubliette
 
       def fetch
         return local_fetch if local_mode?
-        response = self.class.get(fetch_url)
+        response = self.class.get(fetch_url, get_options)
         raise Oubliette::API::FetchError, "Error fetching object \"#{fetch_url}\": #{response.code} - #{response.message}" unless response.code == 200
         parse_json( response.body )
         self
@@ -59,26 +60,42 @@ module Oubliette
         return true
       end
 
+      def get_options
+        self.class.get_options(@user)
+      end
+
+      def post_options
+        get_options
+      end
+
       module ClassMethods
-        def from_json(json)
-          self.new.tap do |instance|
+        def from_json(json, user)
+          self.new(user).tap do |instance|
             instance.from_json(json)
           end
         end
 
-        def parse_json(json)
-          self.from_json(JSON.parse(json))
+        def get_options(user)
+          {query: {user: user}}
         end
 
-        def find(id)
-          obj = self.new
+        def post_options(user)
+          self.get_options(user)
+        end
+
+        def parse_json(json, user)
+          self.from_json(JSON.parse(json), user)
+        end
+
+        def find(id, user)
+          obj = self.new(user)
           obj.id = id
           obj.fetch
         end
 
-        def try_find(id)
+        def try_find(id, user)
           begin
-            find(id)
+            find(id, user)
           rescue Oubliette::API::FetchError => e
             nil
           end

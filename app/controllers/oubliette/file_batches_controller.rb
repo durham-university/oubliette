@@ -1,5 +1,8 @@
 module Oubliette
   class FileBatchesController < Oubliette::ApplicationController
+    include DurhamRails::ImpersonateBehaviour
+    allow_impersonate [:show, :create, :index, :update], user_key: :user
+
     include DurhamRails::ModelControllerBase
     include DurhamRails::ReceiveMovesBehaviour
     

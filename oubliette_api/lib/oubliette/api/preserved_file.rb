@@ -12,12 +12,12 @@ module Oubliette
       attr_accessor :job_tag
       attr_accessor :parent_id
 
-      def initialize
+      def initialize(user)
         super
       end
 
       def from_json(json)
-        super(json)        
+        super(json)
         @ingestion_date = DateTime.parse(json['ingestion_date'].to_s) if date_time_present?(json['ingestion_date'])
         @status = json['status']
         @check_date = DateTime.parse(json['check_date'].to_s) if date_time_present?(json['check_date'])
@@ -43,7 +43,7 @@ module Oubliette
 
       def parent
         if @parent_id
-          @parent ||= Oubliette::API::FileBatch.find(@parent_id)
+          @parent ||= Oubliette::API::FileBatch.find(@parent_id, @user)
         else
           nil
         end
@@ -67,9 +67,11 @@ module Oubliette
         (username,password) = [self.class.authentication_config.try(:[],'username'), self.class.authentication_config.try(:[],'password')]
         ca_file = self.class.authentication_config.try(:[],'ca_file')
         uri = URI(download_url)
+        uri.query = (uri.query.present? ? (uri.query + '&') : '') + get_options[:query].to_query
         req_options = { use_ssl: (uri.scheme=='https') }
         req_options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE if [false,'false'].include?(Oubliette::API::config['verify_certificate'])
         req_options[:ca_file] = ca_file if ca_file.present?
+        
         return_value = nil
         Net::HTTP.start(uri.hostname, uri.port, req_options ) do |http|
           req = Net::HTTP::Get.new(uri)
@@ -85,20 +87,20 @@ module Oubliette
         @path_ingest ||= Oubliette::API.config.fetch('path_ingest', false)
       end
 
-      def self.all
-        return all_local if local_mode?
-        response = self.get('/preserved_files.json')
+      def self.all(user)
+        return all_local(user) if local_mode?
+        response = self.get('/preserved_files.json', get_options(user))
         raise FetchError, "Error fetching preserved_files: #{response.code} - #{response.message}" unless response.code == 200
         # TODO: Handle paging properly
         json = JSON.parse(response.body)["resources"]
         json.map do |file_json|
-          self.from_json(file_json)
+          self.from_json(file_json, user)
         end
       end
 
-      def self.all_local
+      def self.all_local(user)
         local_class.all.to_a.map do |repo|
-          self.from_json(repo.as_json)
+          self.from_json(repo.as_json, user)
         end
       end
 
@@ -108,6 +110,7 @@ module Oubliette
 
       # to ingest in a batch, give parent batch in options[:parent]
       def self.ingest(file,options={})
+        user = options[:user]
         unless file.respond_to?(:read)
           file=StringIO.new(file.to_s)
         end
@@ -166,7 +169,7 @@ module Oubliette
           end
         end
 
-        resp = self.post(post_url, query: query_options)
+        resp = self.post(post_url, post_options(user).deep_merge({query: query_options}))
 
         begin
           json = JSON.parse(resp.body)
@@ -175,20 +178,21 @@ module Oubliette
         end
         raise Oubliette::API::IngestError, "Unable to ingest file. #{json['error']}" unless json['status']=='created'
 
-        from_json(json['resource'])
+        from_json(json['resource'], user)
       end
       
       # options should consist of 
+      #    user: (required, user performing the action)
       #    export_ids: []  (required)
       #    export_method: (optional, defaults to store)
       #    export_destination: (optional, not all methods will require this)
       #    export_note: (optional, free text note about export included in logs)
       def self.export(options)
         raise "Export not supported in local mode" if local_mode?
-        
+        user = options[:user]
         post_url = "/background_job_containers/start_export_job.json"
         query_options = options.slice(:export_ids, :export_method, :export_destination, :export_note)
-        resp = self.post(post_url, query: query_options)
+        resp = self.post(post_url, post_options(user).deep_merge({query: query_options}))
         
         begin
           json = JSON.parse(resp.body)

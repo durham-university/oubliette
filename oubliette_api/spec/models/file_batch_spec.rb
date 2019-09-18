@@ -1,17 +1,18 @@
 require 'shared/model_common'
 
 RSpec.describe Oubliette::API::FileBatch do
+  let( :user ) { "testuser" }
   let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","title":"Testing","note":"Note for testing","type":"batch"},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","title":"New file","note":"","type":"batch"},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","title":"Jpeg test","note":"","type":"batch"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","title":"PDF test","note":"This is a pdf file"}]}| }
   let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","title" => "PDF test","note" => "This is a pdf file", "type" => "batch", "job_tag" => "test_job"} }
   let( :file_json_s ) { %q|{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Test file","note":"Note for testing","ingestion_checksum":null}| }
-  let( :file_batch ) { Oubliette::API::FileBatch.from_json(json) }
+  let( :file_batch ) { Oubliette::API::FileBatch.from_json(json, user) }
 
   it_behaves_like "model_common"
 
   describe "all" do
     it "parses the response" do
       expect(Oubliette::API::FileBatch).to receive(:get).and_return(OpenStruct.new(body: all_json_s, code: 200))
-      resp = Oubliette::API::FileBatch.all
+      resp = Oubliette::API::FileBatch.all(user)
       expect(resp).to be_a Array
       expect(resp.size).to eql 4
       batch_count = 0
@@ -47,7 +48,7 @@ RSpec.describe Oubliette::API::FileBatch do
   
   describe "#files" do
     context "with a fully feched resource" do
-      let(:file_batch) { Oubliette::API::FileBatch.from_json(json.merge('files' => [JSON.parse(file_json_s)])) }
+      let(:file_batch) { Oubliette::API::FileBatch.from_json(json.merge('files' => [JSON.parse(file_json_s)]), user) }
       it "returns files without fetching again" do
         expect(file_batch).not_to receive(:fetch)
         expect(file_batch.files.count).to eql(1)
@@ -69,9 +70,9 @@ RSpec.describe Oubliette::API::FileBatch do
   describe ":create" do
     let(:params) { { title: 'new batch', note: 'test note', dummy: 'dummy', job_tag: 'test_job'} }
     it "posts the resource" do
-      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { file_batch: {title: 'new batch', note: 'test note', job_tag: 'test_job'}}}) \
+      expect(Oubliette::API::FileBatch).to receive(:post).with('/file_batches.json', {body: { user: user, file_batch: {title: 'new batch', note: 'test note', job_tag: 'test_job'}}}) \
         .and_return(OpenStruct.new(code: 200, body: '{"resource":{"id":"123456","title":"new batch","note":"test note","job_tag":"test_job","type":"batch"}}'))
-      res = Oubliette::API::FileBatch.create(params)
+      res = Oubliette::API::FileBatch.create(params, user)
       expect(res).to be_a(Oubliette::API::FileBatch)
       expect(res.id).to eql('123456')
       expect(res.title).to eql('new batch')
@@ -95,7 +96,7 @@ RSpec.describe Oubliette::API::FileBatch do
           expect(inst).to receive(:as_json).and_return(params.stringify_keys.merge({'id'=>'123456','type'=>'batch'}))
         end
       end
-      res = Oubliette::API::FileBatch.create(params)
+      res = Oubliette::API::FileBatch.create(params, user)
       expect(res).to be_a(Oubliette::API::FileBatch)
       expect(res.id).to eql('123456')
       expect(res.title).to eql('new batch')

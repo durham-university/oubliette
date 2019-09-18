@@ -1,9 +1,10 @@
 require 'shared/model_common'
 
 RSpec.describe Oubliette::API::PreservedFile do
+  let( :user ) { "testuser" }
   let( :all_json_s ) { %q|{"resources":[{"id":"45/95/49/d8/459549d8-a5d9-4b3f-b878-f80387a7d67f","ingestion_date":"2015-11-20T14:42:24.234+00:00","status":"not checked","check_date":null,"title":"Testing","note":"Note for testing","tag":["test","other"],"ingestion_checksum":null,"parent_id":"parentid123"},{"id":"23/50/ce/c4/2350cec4-7233-42ed-bb7e-af179a769c60","ingestion_date":"2015-11-23T10:28:22.677+00:00","status":"not checked","check_date":null,"title":"New file","note":"","tag":[],"ingestion_checksum":null},{"id":"28/95/a1/36/2895a136-6269-4e9d-a7a6-6c34c1026625","ingestion_date":"2015-11-23T10:48:07.334+00:00","status":"not checked","check_date":null,"title":"Jpeg test","note":"","tag":[],"ingestion_checksum":"md5:15eb7a5c063f0c4cdda6a7310b536ba4"},{"id":"b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date":"2015-11-23T13:10:44.494+00:00","status":"not checked","check_date":null,"title":"PDF test","note":"This is a pdf file","tag":["test","other"],"ingestion_checksum":null}]}| }
   let( :json ) { {"id" => "b6/77/b0/50/b677b050-4128-4d77-ac42-8fdf55f52a69","ingestion_date" => "2015-11-23T13:10:44.494+00:00","status" => "not checked","check_date" => "2015-11-23T13:11:00.000+00:00","title" => "PDF test","note" => "This is a pdf file", "tag" => ["test","other"],"ingestion_checksum" => "md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d", "job_tag" => "test_job", "parent_id" => "parentid123"} }
-  let( :file ) { Oubliette::API::PreservedFile.from_json(json) }
+  let( :file ) { Oubliette::API::PreservedFile.from_json(json, user) }
   let( :file_fixture ) { fixture('test1.jpg') }
 
   it_behaves_like "model_common"
@@ -16,7 +17,7 @@ RSpec.describe Oubliette::API::PreservedFile do
   describe "all" do
     it "parses the response" do
       expect(Oubliette::API::PreservedFile).to receive(:get).and_return(OpenStruct.new(body: all_json_s, code: 200))
-      resp = Oubliette::API::PreservedFile.all
+      resp = Oubliette::API::PreservedFile.all(user)
       expect(resp).to be_a Array
       expect(resp.size).to eql 4
       resp.each do |repo|
@@ -71,7 +72,7 @@ RSpec.describe Oubliette::API::PreservedFile do
   describe "#parent" do
     let(:batch) { double('batch') }
     it "finds the batch" do
-      expect(Oubliette::API::FileBatch).to receive(:find).with('parentid123').and_return(batch)
+      expect(Oubliette::API::FileBatch).to receive(:find).with('parentid123', user).and_return(batch)
       expect(file.parent).to eql(batch)
     end
   end
@@ -103,6 +104,7 @@ RSpec.describe Oubliette::API::PreservedFile do
       expect(Oubliette::API::PreservedFile).to receive(:post) do |url, params|
         expect(url).to eql("/background_job_containers/start_export_job.json")
         query = params[:query]
+        expect(query[:user]).to eql(user)
         expect(query[:export_ids]).to eql(['aaa', 'bbb'])
         expect(query[:export_method]).to eql(:store)
         expect(query[:export_destination]).to eql('/tmp/test')
@@ -111,21 +113,22 @@ RSpec.describe Oubliette::API::PreservedFile do
         OpenStruct.new(body: '{"status":true, "job_id":"testjobid"}', code: 200)
       end
       expect(Oubliette::API::PreservedFile).to receive(:local_mode?).and_return(false)
-      expect(Oubliette::API::PreservedFile.export(export_ids: ['aaa', 'bbb'], export_method: :store, export_destination: '/tmp/test', export_note: 'test note')).to eql('testjobid')
+      expect(Oubliette::API::PreservedFile.export(user: user, export_ids: ['aaa', 'bbb'], export_method: :store, export_destination: '/tmp/test', export_note: 'test note')).to eql('testjobid')
     end
   end
 
   describe "::ingest" do
-    let( :params ) { {title: 'ingest title', note: 'ingest note', tag: ['test'], ingestion_log: 'ingestion log', ingestion_checksum: 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d' } }
+    let( :params ) { {user: user, title: 'ingest title', note: 'ingest note', tag: ['test'], ingestion_log: 'ingestion log', ingestion_checksum: 'md5:dcca695ddf72313d5f9f80935c58cf9ddcca695ddf72313d5f9f80935c58cf9d' } }
     let( :response ) { { status: :created, resource: json }.to_json }
     let( :response_code ) { 200 }
     let( :original_filename ) { nil }
     let( :content_type ) { nil }
     let( :job_tag ) { nil }
     before {
-      expect(Oubliette::API::PreservedFile).to receive(:post) { |url,params|
+        expect(Oubliette::API::PreservedFile).to receive(:post) { |url,params|
         query = params[:query]
         query_content_check.call(query)
+        expect(query[:user]).to eql(user)
         expect(query[:'preserved_file[title]']).to eql 'ingest title'
         expect(query[:'preserved_file[note]']).to eql 'ingest note'
         expect(query[:'preserved_file[tag]']).to eql(['test'])
