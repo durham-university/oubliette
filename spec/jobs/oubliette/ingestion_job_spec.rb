@@ -125,7 +125,7 @@ RSpec.describe Oubliette::IngestionJob do
       it "starts post_ingestion job" do
         expect {
           job.run
-        }.to start_channel(Oubliette::PostIngestionJob, request: hash_including(resource_id: preserved_file.id))
+        }.to start_channel(Oubliette::PostIngestionJob, request: hash_including(resource_id: preserved_file.id, content_path: content_path))
         expect(job.state).to eql('post')
       end
 

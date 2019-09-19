@@ -119,7 +119,7 @@ module Oubliette
       end
 
       self.state = 'post'
-      local_call('post_ingestion', {binding_key: 'post_ingestion', resource: resource})
+      local_call('post_ingestion', {binding_key: 'post_ingestion', resource: resource, content_path: ingestion_path})
 
       result[:preserved_file] = resource.as_json
       send_notification(notification: 'post_ingest') if notify?('post_ingest')      

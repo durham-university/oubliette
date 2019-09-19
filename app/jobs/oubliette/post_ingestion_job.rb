@@ -6,6 +6,7 @@ module Oubliette
     include Jobduct::WithStates
     
     request_reader :fixity_mode, default: [:fedora, :ingestion] do |val| Array.wrap(val).map(&:to_sym) end
+    request_reader :content_path
 
     job_state :fixity, on_success: [:do_characterisation]
     job_state :characterisation, on_success: [:job_finished]
@@ -22,7 +23,7 @@ module Oubliette
 
     def do_characterisation(callback=nil)
       self.state = 'characterisation'
-      local_call('characterisation', {binding_key: 'characterisation', resource: resource})
+      local_call('characterisation', {binding_key: 'characterisation', resource: resource, content_path: content_path})
       true
     end
     

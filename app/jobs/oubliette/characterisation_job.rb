@@ -4,9 +4,11 @@ module Oubliette
     include DurhamRails::Channels::ChannelBase
     include DurhamRails::Channels::WithResource
     include DurhamRails::Retry
-        
+
+    request_reader :content_path
+    
     def run
-      actor = Oubliette::CharacterisationActor.new(resource)
+      actor = Oubliette::CharacterisationActor.new(resource, user_key, {content_path: content_path})
       actor.instance_variable_set(:@log, log)
 
       # This is basically actor.set_chanacterisation but with retry added for save

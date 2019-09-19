@@ -13,10 +13,20 @@ RSpec.describe Oubliette::CharacterisationActor do
   let(:content) { 'dummy content' }
   let(:original_name) { 'test.txt' }
   let(:characterisation) { Nokogiri::XML('<fits><test/></fits>') }
+  let(:user) { 'testuser' }
+  let(:attributes) { {} }
   
-  let(:actor){ Oubliette::CharacterisationActor.new(file,nil) }
+  let(:actor){ Oubliette::CharacterisationActor.new(file,user,attributes) }
   
   describe "#characterisation" do
+    context "with content path in attributes" do
+      let(:attributes){ { content_path: '/tmp/moo' } }
+      before { allow(File).to receive(:exists?).with(attributes[:content_path]).and_return(true) }
+      it "characterises with existing file" do
+        expect(actor).to receive(:run_fits).with('/tmp/moo').and_return([characterisation,'',0])
+        expect(actor.characterisation).to eql(characterisation)
+      end
+    end
     context "with file instance variable" do
       let(:content_inst) { OpenStruct.new(path: '/tmp/moo') }
       it "characterises with existing file" do
