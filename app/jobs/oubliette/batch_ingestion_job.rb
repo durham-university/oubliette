@@ -114,6 +114,10 @@ module Oubliette
     def self.create_batch(params)
       if params[:job_tag].present?
         duplicate = Oubliette::FileBatch.find_job_duplicate("#{params[:job_tag]}/batch")
+        # This is an extra safeguard to avoid putting files in the wrong batches. If someone 
+        # reuses a process in Hilda for a different batch of files then the job will have the
+        # same job tag and we would find a duplicate here. The solution is not to reuse processes.
+        raise "Found file batch with identical job_tag but different title." if duplicate.present? && duplicate.title != (params[:batch_title] || 'unnamed batch')
         return duplicate if duplicate.present?
       end
 
