@@ -22,7 +22,7 @@ module Oubliette
         can :impersonate, User
       elsif user.is_editor?
         can [:index, :create, :new], [Oubliette::PreservedFile, Oubliette::FileBatch]
-        can [:read], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_read?(user) end
+        can [:read], [Oubliette::PreservedFile, Oubliette::FileBatch, DurhamRails::BackgroundJobContainer] do |item| item.can_read?(user) end
         can [:update, :destroy], [Oubliette::PreservedFile, Oubliette::FileBatch] do |item| item.can_edit?(user) end
         can [:create], [Oubliette::PreservedFile, Oubliette::FileBatch]
         can [:download], [Oubliette::PreservedFile] do |item| item.can_read?(user) end

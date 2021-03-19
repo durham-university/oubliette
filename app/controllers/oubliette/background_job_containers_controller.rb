@@ -2,6 +2,8 @@ module Oubliette
   class BackgroundJobContainersController < Oubliette::ApplicationController
     include DurhamRails::BackgroundJobContainersControllerBehaviour
     
+    helper Jobduct::JobductHelper
+    
     def self.form_terms
       super - [:job_category]
     end

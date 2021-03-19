@@ -1,0 +1,4 @@
+<% binding = Jobduct.bindings.find do |x| x.binding_key=='export' end
+if binding && can?(:call, binding) %>
+<li><%= link_to("Start export job", engine_paths.polymorphic_path(@resource, action: :start_export), method: "POST") %></li>
+<% end %>

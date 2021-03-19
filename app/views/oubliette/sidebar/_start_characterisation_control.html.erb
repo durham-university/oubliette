@@ -1,3 +1,4 @@
-<% if can?(:start_characterisation, Oubliette::PreservedFile) %>
+<% binding = Jobduct.bindings.find do |x| x.binding_key=='characterisation' end
+if binding && can?(:call, binding) %>
 <li><%= link_to("Start characterisation job", engine_paths.polymorphic_path(@resource, action: :start_characterisation), method: "POST") %></li>
 <% end %>

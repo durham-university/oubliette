@@ -21,7 +21,9 @@ Oubliette::Engine.routes.draw do
   post '/preserved_files/:id/deselect_all', to: 'preserved_files#deselect_all_resources', as: :deselect_all_preserved_file
 
   post '/file_batches/:id/move_into', to: 'file_batches#move_selection_into', as: :move_into_file_batch
-  
+
+  post '/file_batches/:export_batch_id/export', to: 'channels#call', as: :start_export_file_batch, defaults: { binding_key: 'export' }
+
   resources :background_job_containers, as: :durham_rails_background_job_containers
   get '/background_job_containers/:resource_id/channels', to: 'channels#index', as: :durham_rails_background_job_container_channels
   post '/background_job_containers/start_fixity_job', to: 'channels#call', as: :start_fixity_job, defaults: { binding_key: 'fixity' }

@@ -1,3 +1,4 @@
-<% if can?(:start_fixity_check, Oubliette::PreservedFile) %>
+<% binding = Jobduct.bindings.find do |x| x.binding_key=='fixity_single' end
+if binding && can?(:call, binding) %>
 <li><%= link_to("Start fixity check job", engine_paths.polymorphic_path(@resource, action: :start_fixity_check), method: "POST") %></li>
 <% end %>

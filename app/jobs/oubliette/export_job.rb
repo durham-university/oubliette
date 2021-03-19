@@ -5,6 +5,7 @@ module Oubliette
     include DurhamRails::Channels::WithJobContainer
 
     request_reader :export_method, default: :store, &:to_sym
+    request_reader :export_batch_id
     request_reader :export_file_ids do |val| Array.wrap(val) end
     request_reader :export_destination, :export_note
     
@@ -25,29 +26,36 @@ module Oubliette
       params[:export_file_ids] = export_ids
     end
 
-    def default_job_container_category
+    def self.default_job_container_category
       :oubliette
     end
     
     def run
       log!("Starting export job")
       
-      actor = Oubliette::ExportActor.new(nil,{
-        export_file_ids: export_file_ids,
-        export_method: export_method,
-        export_destination: export_destination,
-        export_note: export_note
-      })
-      actor.instance_variable_set(:@log, log)
-      
       begin
+        file_ids = export_file_ids
+        if file_ids.empty? && export_batch_id.present?
+          batch = Oubliette::FileBatch.find(export_batch_id)
+          batch.ordered_members.from_solr!
+          file_ids = batch.files.map(&:id)
+        end
+        
+        actor = Oubliette::ExportActor.new(nil,{
+          export_file_ids: file_ids,
+          export_method: export_method,
+          export_destination: export_destination,
+          export_note: export_note
+        })
+        actor.instance_variable_set(:@log, log)
+        
         actor.export!
       rescue StandardError => e
         log!(e)
       end
-
+    
       log!("Finished export job")
     end
-
+  
   end
 end

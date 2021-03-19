@@ -9,7 +9,7 @@ module Oubliette
     request_reader :file_limit, default: 500
     request_reader :time_limit, default: 30
     
-    def default_job_container_category
+    def self.default_job_container_category
       :oubliette
     end
         
