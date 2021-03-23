@@ -1,4 +1,27 @@
 <% binding = Jobduct.bindings.find do |x| x.binding_key=='export' end
 if binding && can?(:call, binding) %>
-<li><%= link_to("Start export job", engine_paths.polymorphic_path(@resource, action: :start_export), method: "POST") %></li>
+<li><a href="#" data-target="#export_batch_modal" data-toggle="modal">Start export job</a></li>
+
+<% content_for :modal_dialogs do %>
+  <div id="export_batch_modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="ajax-modal-close close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h1 class="modal-title">Export file batch</h1>
+        </div>
+        <div class="popup-tool-form">
+          <p>
+            This tool will export all the images in the file batch and save them in a zip file on the server. Once
+            finished, you will need to log into the server and download the zip file from there.
+          </p>
+          <div class="actions">
+            <%= link_to("Start", engine_paths.polymorphic_path(@resource, action: :start_export), method: "POST", class: "btn btn-primary") %>
+            <button type="button" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>  
 <% end %>
