@@ -1,12 +1,13 @@
 module Oubliette
   class ExportActor < Oubliette::BaseActor
-    attr_accessor :export_file_ids, :export_method, :export_destination, :export_note
+    attr_accessor :export_file_ids, :export_method, :export_destination, :export_note, :progress_proc
     def initialize(user=nil, attributes={})
       super(nil, user, attributes)
       @export_method = @attributes.fetch(:export_method, :store)
       @export_file_ids = @attributes[:export_file_ids]
       @export_destination = @attributes[:export_destination]
       @export_note = @attributes[:export_note]
+      @progress_proc = @attributes[:progress_proc]
     end
     
     def export!
@@ -66,6 +67,7 @@ module Oubliette
         log!("Zip file: #{export_temp_zip.name}")
         oubliette_files.each do |file|
           log!("Adding file #{file.id}")
+          progress_proc.call if progress_proc.present?
           zip_file_name = file.content.original_name || 'file'
           counter = 0
           while zip_file_name.blank? || used_file_names.key?(zip_file_name.downcase)
@@ -83,6 +85,8 @@ module Oubliette
       rescue StandardError => e
         log!(e)
       ensure
+        log!("Closing Zip file")
+        progress_proc.call if progress_proc.present?
         @export_temp_zip.try(:close)
       end
       !log.errors?

@@ -13,5 +13,11 @@ Rails.application.routes.draw do
         mount Resque::Server.new, at: 'queues'
       end
     end
-  end  
+  end
+
+  if defined?(Oubliette::ResqueAdmin) && defined?(Sidekiq::Web)
+    constraints Oubliette::ResqueAdmin do
+      mount Sidekiq::Web, at: 'sidekiq'
+    end
+  end
 end

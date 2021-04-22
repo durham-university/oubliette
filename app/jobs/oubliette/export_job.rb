@@ -45,7 +45,8 @@ module Oubliette
           export_file_ids: file_ids,
           export_method: export_method,
           export_destination: export_destination,
-          export_note: export_note
+          export_note: export_note,
+          progress_proc: Proc.new do @channel.save end
         })
         actor.instance_variable_set(:@log, log)
         
